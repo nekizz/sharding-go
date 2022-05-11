@@ -33,6 +33,7 @@ func ShardingTable() {
 		ShardingKey:    "ID",
 		NumberOfShards: 2,
 	}, "orders")
+
 	connection.DB.Use(middleware)
 
 	TransferData()
