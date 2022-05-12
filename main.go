@@ -2,16 +2,14 @@ package main
 
 import (
 	"fmt"
-	"shrading/connection"
+	"shrading/excel"
+	"shrading/migration"
 )
 
 func main() {
-	//new_db.ShardingTable()
-	conn, err := connection.Excelconn()
+	migration.MigrateDB()
+	err := excel.ReadDataFromExcel()
 	if err != nil {
 		fmt.Println(err)
 	}
-
-	a, _ := conn.GetCellValue("DKGD", "B328")
-	fmt.Println(a)
 }

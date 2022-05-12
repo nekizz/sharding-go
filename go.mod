@@ -3,6 +3,7 @@ module shrading
 go 1.18
 
 require (
+	github.com/go-gormigrate/gormigrate/v2 v2.0.0
 	github.com/xuri/excelize/v2 v2.6.0
 	gorm.io/driver/postgres v1.3.5
 	gorm.io/gorm v1.23.5

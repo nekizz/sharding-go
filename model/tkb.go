@@ -3,16 +3,18 @@ package model
 import "time"
 
 type TKB struct {
+	ID          uint
 	MaMonHoc    string
 	TenMon      string
 	Lop         string
-	KhoaNganh   int
+	KhoaNganh   string
 	Nganh       string
-	Nhom        int
-	ToHop       int
-	Thu         int
-	Kip         int
-	SySo        int
+	Nhom        string
+	ToHop       string
+	ToTH        string
+	Thu         string
+	Kip         string
+	SySo        string
 	Phong       string
 	Nha         string
 	HinhThucThi string
@@ -23,15 +25,11 @@ type TKB struct {
 	NgayKT      time.Time
 	Khoa        string
 	BoMon       string
-	SoTC        int
-	PhanBoCT    PhanBoCT
-}
-
-type PhanBoCT struct {
-	TSTiet int
-	LT     int
-	BT     int
-	BTL    int
-	THTN   int
-	TuHoc  int
+	SoTC        string
+	TSTiet      string //phan bo kthuc
+	LT          string
+	BT          string
+	BTL         string
+	THTN        string
+	TuHoc       string
 }
