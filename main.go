@@ -2,14 +2,12 @@ package main
 
 import (
 	"fmt"
-	"shrading/excel"
-	"shrading/migration"
+	"shrading/shard"
+	"time"
 )
 
 func main() {
-	migration.MigrateDB()
-	err := excel.ReadDataFromExcel()
-	if err != nil {
-		fmt.Println(err)
-	}
+	fmt.Println(time.Now())
+	shard.DoShard()
+	fmt.Println(time.Now())
 }

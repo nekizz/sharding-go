@@ -80,7 +80,7 @@ func ReadDataFromExcel() error {
 				TuHoc:       tuHoc,
 			}
 
-			_, err := old_db.CreatOne(tkb)
+			_, err := old_db.CreatOneTKB(tkb)
 			if err != nil {
 				fmt.Println(err)
 			}

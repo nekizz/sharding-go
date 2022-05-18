@@ -23,7 +23,7 @@ func ListAll(limit int, offset int) ([]model.TKB, int64, error) {
 	return listTKB, count, nil
 }
 
-func CreatOne(tkb *model.TKB) (*model.TKB, error) {
+func CreatOneTKB(tkb *model.TKB) (*model.TKB, error) {
 	query := connection.DB.Model(&model.TKB{}).Create(tkb)
 
 	if err := query.Error; nil != err {
