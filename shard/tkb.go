@@ -6,9 +6,11 @@ import (
 )
 
 const CreatTableTKB = `CREATE TABLE ?shard.tkbs (id bigint DEFAULT ?shard.next_id(), ma_mon_hoc text, 
-ten_mon text, lop text, khoa_nganh text, nganh text, nhom text, to_hop text, to_th text, thu text, kip text, sy_so text, phong text, nha text, 
+ten_mon text, lop text, khoa_nganh text, nganh text, nhom text, to_hop text, to_th text, thu text, kip text, so_cho_con_lai text, sy_so text, phong text, nha text, 
 hinh_thuc_thi text, ma_gv text, ten_gv text, ghi_chu text, ngay_bd timestamp with time zone, ngay_kt timestamp with time zone, khoa text, bo_mon text, so_tc text
 , ts_tiet text, lt text, bt text, btl text, thtn text, tu_hoc text)`
+
+const CreateTableRegisterSubject = `CREATE TABLE ?shard.register_subject (id bigint DEFAULT ?shard.next_id(), ma_sv text, ma_mon_hoc text)`
 
 type TKB struct {
 	tableName string `sql:"?shard.tkbs"`
@@ -24,6 +26,7 @@ type TKB struct {
 	ToTH        string
 	Thu         string
 	Kip         string
+	SoChoConLai string
 	SySo        string
 	Phong       string
 	Nha         string
@@ -44,6 +47,14 @@ type TKB struct {
 	TuHoc       string
 }
 
+type RegisterSubject struct {
+	tableName string `sql:"?shard.register_subject"`
+
+	ID       uint
+	MaSV     string
+	MaMonHoc string
+}
+
 func CreateTKB(cluster *sharding.Cluster, tkb *TKB) error {
 	return cluster.Shard(int64(tkb.ID)).Insert(tkb)
 }
@@ -60,4 +71,20 @@ func GetTKBs(cluster *sharding.Cluster, id int64) ([]TKB, error) {
 	var tkbs []TKB
 	err := cluster.Shard(id).Model(&tkbs).Where("id = ?", id).Select()
 	return tkbs, err
+}
+
+func CreateRS(cluster *sharding.Cluster, rs *RegisterSubject) error {
+	return cluster.Shard(int64(rs.ID)).Insert(rs)
+}
+
+func GetRS(cluster *sharding.Cluster, id int64) (*RegisterSubject, error) {
+	var rs RegisterSubject
+	err := cluster.SplitShard(id).Model(&RegisterSubject{}).Where("id = ?", id).Select()
+	return &rs, err
+}
+
+func GetRSs(cluster *sharding.Cluster, id int64) ([]RegisterSubject, error) {
+	var rs []RegisterSubject
+	err := cluster.Shard(id).Model(&rs).Where("id = ?", id).Select()
+	return rs, err
 }

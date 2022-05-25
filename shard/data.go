@@ -20,6 +20,7 @@ func changeDataType(tkb model.TKB) *TKB {
 		Kip:         tkb.Kip,
 		SySo:        tkb.SySo,
 		Phong:       tkb.Phong,
+		SoChoConLai: tkb.SySo,
 		Nha:         tkb.Nha,
 		HinhThucThi: tkb.HinhThucThi,
 		MaGV:        tkb.MaGV,

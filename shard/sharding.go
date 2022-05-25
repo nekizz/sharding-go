@@ -49,6 +49,7 @@ func createShard(shard *pg.DB) error {
 		`CREATE SCHEMA ?shard`,
 		sqlFuncs,
 		CreatTableTKB,
+		CreateTableRegisterSubject,
 	}
 
 	for _, q := range queries {
@@ -61,7 +62,7 @@ func createShard(shard *pg.DB) error {
 	return nil
 }
 
-func DoShard() {
+func createCluster() (*sharding.Cluster, int) {
 	db := pg.Connect(&pg.Options{
 		Addr:     "13.215.49.1:5432",
 		User:     "root",
@@ -84,10 +85,15 @@ func DoShard() {
 
 	dbs := []*pg.DB{db, db2, db3} // list of physical PostgreSQL servers
 	nshards := 3                  // 2 logical shards
-	// Create cluster with 1 physical server and 2 logical shards.
+
 	cluster := sharding.NewCluster(dbs, nshards)
 
-	// Create database schema for our logical shards.
+	return cluster, nshards
+}
+
+func DoShard() {
+	cluster, nshards := createCluster()
+
 	for i := 0; i < nshards; i++ {
 		if err := createShard(cluster.Shard(int64(i))); err != nil {
 			panic(err)
@@ -123,6 +129,16 @@ func transferDataToShard(cluster *sharding.Cluster) error {
 		}(idx, &wg)
 		wg.Wait()
 	}
+
+	err1 := CreateRS(cluster, &RegisterSubject{
+		ID:       2,
+		MaSV:     "B18DCCN405",
+		MaMonHoc: "INT1446",
+	})
+	if err1 != nil {
+		fmt.Println(err1)
+	}
+
 	fmt.Println("shard thanh cong")
 	return nil
 }
