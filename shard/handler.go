@@ -60,6 +60,7 @@ func init() {
 	cluster := sharding.NewCluster(dbs, nshards)
 	Cluster = cluster
 	Nshards = nshards
+	fmt.Println(cluster)
 
 	fmt.Println("Create cluster successful")
 }

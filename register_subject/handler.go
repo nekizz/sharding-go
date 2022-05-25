@@ -8,6 +8,7 @@ import (
 )
 
 func RegisterSubject(c *fiber.Ctx) error {
+
 	body := new(RegisterSubjectBody)
 	if err := c.BodyParser(body); err != nil {
 		return c.JSON(helper.Response{
@@ -39,11 +40,19 @@ func RegisterSubject(c *fiber.Ctx) error {
 		MaMonHoc: body.MaMon,
 	}
 
-	tkb := &shard.TKB{
-		ID:          8,
-		SoChoConLai: "86"}
+	tkb, err := shard.GetTKB(shard.Cluster, 1)
+	if err != nil {
+		return c.JSON(helper.Response{
+			Status:  false,
+			Data:    nil,
+			Message: err.Error(),
+			Error:   helper.Error{},
+		})
+	}
+	tkb.SoChoConLai = "86"
+	//tkb := &shard.TKB{ID: 8, SoChoConLai: "86"}
 
-	err := shard.CreateRS(shard.Cluster, rs)
+	err = shard.CreateRS(shard.Cluster, rs)
 	if err != nil {
 		return c.JSON(helper.Response{
 			Status:  false,

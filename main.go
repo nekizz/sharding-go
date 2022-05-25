@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"log"
 	"shrading/routes"
+	"shrading/shard"
 )
 
 func main() {
@@ -14,6 +16,7 @@ func main() {
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Hello, World!")
 	})
+	fmt.Println(shard.Cluster)
 
 	errA := app.Listen(":3000")
 	if errA != nil {
