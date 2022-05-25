@@ -4,43 +4,14 @@ import (
 	"fmt"
 	"github.com/go-pg/pg"
 	"github.com/go-pg/sharding"
+	"github.com/gofiber/fiber/v2"
+	"shrading/helper"
 	"shrading/model"
-	"shrading/old_db"
 	"sync"
 )
 
-const sqlFuncs = `
-CREATE SEQUENCE ?shard.id_seq;
-
--- _next_id returns unique sortable id.
-CREATE FUNCTION ?shard._next_id(tm timestamptz, shard_id int, seq_id bigint)
-RETURNS bigint AS $$
-DECLARE
-  max_shard_id CONSTANT bigint := 2048;
-  max_seq_id CONSTANT bigint := 4096;
-  id bigint;
-BEGIN
-  shard_id := shard_id % max_shard_id;
-  seq_id := seq_id % max_seq_id;
-  id := (floor(extract(epoch FROM tm) * 1000)::bigint - ?epoch) << 23;
-  id := id | (shard_id << 12);
-  id := id | seq_id;
-  RETURN id;
-END;
-$$
-LANGUAGE plpgsql
-IMMUTABLE;
-
-CREATE FUNCTION ?shard.next_id()
-RETURNS bigint AS $$
-BEGIN
-   RETURN ?shard._next_id(clock_timestamp(), ?shard_id, nextval('?shard.id_seq'));
-END;
-$$
-LANGUAGE plpgsql;
-`
-
-var CLUSTER *sharding.Cluster
+var Cluster *sharding.Cluster
+var Nshards int
 
 // createShard creates database schema for a given shard.
 func createShard(shard *pg.DB) error {
@@ -62,7 +33,7 @@ func createShard(shard *pg.DB) error {
 	return nil
 }
 
-func createCluster() (*sharding.Cluster, int) {
+func init() {
 	db := pg.Connect(&pg.Options{
 		Addr:     "13.215.49.1:5432",
 		User:     "root",
@@ -87,31 +58,43 @@ func createCluster() (*sharding.Cluster, int) {
 	nshards := 3                  // 2 logical shards
 
 	cluster := sharding.NewCluster(dbs, nshards)
+	Cluster = cluster
+	Nshards = nshards
 
-	return cluster, nshards
+	fmt.Println("Create cluster successful")
 }
 
-func DoShard() {
-	cluster, nshards := createCluster()
+func DoShard(c *fiber.Ctx) error {
 
-	for i := 0; i < nshards; i++ {
-		if err := createShard(cluster.Shard(int64(i))); err != nil {
-			panic(err)
+	for i := 0; i < Nshards; i++ {
+		if err := createShard(Cluster.Shard(int64(i))); err != nil {
+			return c.JSON(helper.Response{
+				Status:  false,
+				Message: "Create shard fail",
+				Data:    nil,
+				Error:   helper.Error{},
+			})
 		}
 	}
 
-	err := transferDataToShard(cluster)
+	err := transferDataToShard(Cluster)
 	if err != nil {
-		panic(err)
+		return c.JSON(helper.Response{
+			Status:  false,
+			Message: "Fail to transfer data",
+			Data:    nil,
+			Error:   helper.Error{},
+		})
 	}
 
 	fmt.Println("shrad database successful")
+	return nil
 }
 
 func transferDataToShard(cluster *sharding.Cluster) error {
 	var wg sync.WaitGroup
 
-	listTKB, count, err := old_db.ListAll(2000, 0)
+	listTKB, count, err := model.ListAll(2000, 0)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -128,15 +111,6 @@ func transferDataToShard(cluster *sharding.Cluster) error {
 			}
 		}(idx, &wg)
 		wg.Wait()
-	}
-
-	err1 := CreateRS(cluster, &RegisterSubject{
-		ID:       2,
-		MaSV:     "B18DCCN405",
-		MaMonHoc: "INT1446",
-	})
-	if err1 != nil {
-		fmt.Println(err1)
 	}
 
 	fmt.Println("shard thanh cong")

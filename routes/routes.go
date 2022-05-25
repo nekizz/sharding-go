@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"shrading/register_subject"
+	"shrading/shard"
 )
 
 func RegisterAPI(app *fiber.App) {
@@ -18,4 +19,5 @@ func RegisterAPI(app *fiber.App) {
 
 func registerTKB(app *fiber.App) {
 	app.Post("/register_subject", register_subject.RegisterSubject)
+	app.Post("/shard", shard.DoShard)
 }

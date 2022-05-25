@@ -1,6 +1,9 @@
 package model
 
-import "time"
+import (
+	"shrading/connection"
+	"time"
+)
 
 type TKB struct {
 	ID          uint
@@ -32,4 +35,32 @@ type TKB struct {
 	BTL         string
 	THTN        string
 	TuHoc       string
+}
+
+func ListAll(limit int, offset int) ([]TKB, int64, error) {
+	var count int64
+	var listTKB []TKB
+
+	listQuery := connection.DB.Model(&TKB{}).Select("*").Limit(limit).Offset(offset)
+	countQuery := connection.DB.Model(&TKB{}).Select("*").Count(&count)
+
+	if err := countQuery.Count(&count).Error; nil != err {
+		return nil, 0, err
+	}
+
+	if err := listQuery.Find(&listTKB).Limit(limit).Offset(offset).Error; nil != err {
+		return nil, 0, err
+	}
+
+	return listTKB, count, nil
+}
+
+func CreatOneTKB(tkb *TKB) (*TKB, error) {
+	query := connection.DB.Model(&TKB{}).Create(tkb)
+
+	if err := query.Error; nil != err {
+		return nil, err
+	}
+
+	return tkb, nil
 }
