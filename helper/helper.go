@@ -1,6 +1,10 @@
 package helper
 
-import "gopkg.in/go-playground/validator.v9"
+import (
+	"fmt"
+	"gopkg.in/go-playground/validator.v9"
+	"strconv"
+)
 
 func ValidateStruct(user interface{}) []*ErrorResponse {
 	var errors []*ErrorResponse
@@ -16,4 +20,12 @@ func ValidateStruct(user interface{}) []*ErrorResponse {
 		}
 	}
 	return errors
+}
+
+func StringToInt(s string) int {
+	val, err := strconv.Atoi(s)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return val
 }

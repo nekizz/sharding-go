@@ -18,6 +18,7 @@ func RegisterAPI(app *fiber.App) {
 }
 
 func registerTKB(app *fiber.App) {
-	app.Post("/register_subject", register_subject.RegisterSubject)
+	app.Post("/regist_subject", register_subject.RegistSubject)
+	app.Post("/unregist_subject", register_subject.UnregistSubject)
 	app.Post("/shard", shard.DoShard)
 }

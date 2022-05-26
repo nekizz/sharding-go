@@ -1,6 +1,7 @@
 package shard
 
 import (
+	"shrading/helper"
 	"shrading/model"
 	"time"
 )
@@ -20,7 +21,7 @@ func changeDataType(tkb model.TKB) *TKB {
 		Kip:         tkb.Kip,
 		SySo:        tkb.SySo,
 		Phong:       tkb.Phong,
-		SoChoConLai: tkb.SySo,
+		SoChoConLai: uint(helper.StringToInt(tkb.SySo)),
 		Nha:         tkb.Nha,
 		HinhThucThi: tkb.HinhThucThi,
 		MaGV:        tkb.MaGV,

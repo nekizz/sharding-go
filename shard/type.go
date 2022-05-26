@@ -19,7 +19,7 @@ type TKB struct {
 	ToTH        string
 	Thu         string
 	Kip         string
-	SoChoConLai string
+	SoChoConLai uint
 	SySo        string
 	Phong       string
 	Nha         string
@@ -45,10 +45,15 @@ type RegisterSubject struct {
 
 	ID       uint
 	MaSV     string
+	IDMon    uint
 	MaMonHoc string
 }
 
 //TKB Activity
+
+func NewTKB() *TKB {
+	return &TKB{}
+}
 
 func CreateTKB(cluster *sharding.Cluster, tkb *TKB) error {
 	return cluster.Shard(int64(tkb.ID)).Insert(tkb)
@@ -58,13 +63,18 @@ func UpdateTKB(cluster *sharding.Cluster, tkb *TKB) error {
 	return cluster.Shard(int64(tkb.ID)).Update(tkb)
 }
 
+func DeleteTKB(cluster *sharding.Cluster, tkb *TKB) error {
+	err := cluster.Shard(int64(tkb.ID)).Delete(&tkb)
+	return err
+}
+
 func GetTKB(cluster *sharding.Cluster, id int64) (*TKB, error) {
 	var tkb TKB
 	err := cluster.Shard(id).Model(&tkb).Where("id = ?", id).Select()
 	return &tkb, err
 }
 
-func GetTKBs(cluster *sharding.Cluster, id int64) ([]TKB, error) {
+func ListAllTKB(cluster *sharding.Cluster, id int64) ([]TKB, error) {
 	var tkbs []TKB
 	err := cluster.Shard(id).Model(&tkbs).Where("id = ?", id).Select()
 	return tkbs, err
@@ -72,8 +82,17 @@ func GetTKBs(cluster *sharding.Cluster, id int64) ([]TKB, error) {
 
 //Register Subject Activity
 
+func NewRS() *RegisterSubject {
+	return &RegisterSubject{}
+}
+
 func CreateRS(cluster *sharding.Cluster, rs *RegisterSubject) error {
 	return cluster.Shard(int64(rs.ID)).Insert(rs)
+}
+
+func DeleteRS(cluster *sharding.Cluster, rs *RegisterSubject) error {
+	err := cluster.Shard(int64(rs.ID)).Delete(rs)
+	return err
 }
 
 func GetRS(cluster *sharding.Cluster, id int64) (*RegisterSubject, error) {
@@ -82,7 +101,7 @@ func GetRS(cluster *sharding.Cluster, id int64) (*RegisterSubject, error) {
 	return &rs, err
 }
 
-func GetRSs(cluster *sharding.Cluster, id int64) ([]RegisterSubject, error) {
+func ListAllRS(cluster *sharding.Cluster, id int64) ([]RegisterSubject, error) {
 	var rs []RegisterSubject
 	err := cluster.Shard(id).Model(&rs).Where("id = ?", id).Select()
 	return rs, err
