@@ -48,6 +48,8 @@ type RegisterSubject struct {
 	MaMonHoc string
 }
 
+//TKB Activity
+
 func CreateTKB(cluster *sharding.Cluster, tkb *TKB) error {
 	return cluster.Shard(int64(tkb.ID)).Insert(tkb)
 }
@@ -56,19 +58,19 @@ func UpdateTKB(cluster *sharding.Cluster, tkb *TKB) error {
 	return cluster.Shard(int64(tkb.ID)).Update(tkb)
 }
 
-// GetTKB splits shard from user id and fetches tkb from the shard.
 func GetTKB(cluster *sharding.Cluster, id int64) (*TKB, error) {
 	var tkb TKB
-	err := cluster.SplitShard(id).Model(&TKB{}).Where("id = ?", id).Select()
+	err := cluster.Shard(id).Model(&tkb).Where("id = ?", id).Select()
 	return &tkb, err
 }
 
-// GetTKbs picks shard by account id and fetches tkb from the shard.
 func GetTKBs(cluster *sharding.Cluster, id int64) ([]TKB, error) {
 	var tkbs []TKB
 	err := cluster.Shard(id).Model(&tkbs).Where("id = ?", id).Select()
 	return tkbs, err
 }
+
+//Register Subject Activity
 
 func CreateRS(cluster *sharding.Cluster, rs *RegisterSubject) error {
 	return cluster.Shard(int64(rs.ID)).Insert(rs)
@@ -76,7 +78,7 @@ func CreateRS(cluster *sharding.Cluster, rs *RegisterSubject) error {
 
 func GetRS(cluster *sharding.Cluster, id int64) (*RegisterSubject, error) {
 	var rs RegisterSubject
-	err := cluster.SplitShard(id).Model(&RegisterSubject{}).Where("id = ?", id).Select()
+	err := cluster.Shard(id).Model(&rs).Where("id = ?", id).Select()
 	return &rs, err
 }
 

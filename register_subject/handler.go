@@ -40,7 +40,7 @@ func RegisterSubject(c *fiber.Ctx) error {
 		MaMonHoc: body.MaMon,
 	}
 
-	tkb, err := shard.GetTKB(shard.Cluster, 1)
+	tkb, err := shard.GetTKB(shard.Cluster, 8)
 	if err != nil {
 		return c.JSON(helper.Response{
 			Status:  false,
