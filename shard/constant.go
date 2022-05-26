@@ -1,7 +1,7 @@
 package shard
 
 const (
-	sqlFuncs = `
+	SQLFUNCS = `
 CREATE SEQUENCE ?shard.id_seq;
 
 -- _next_id returns unique sortable id.
@@ -31,9 +31,9 @@ END;
 $$
 LANGUAGE plpgsql;
 `
-	CreatTableTKB = `CREATE TABLE ?shard.tkbs (id bigint DEFAULT ?shard.next_id(), ma_mon_hoc text, 
-ten_mon text, lop text, khoa_nganh text, nganh text, nhom text, to_hop text, to_th text, thu text, kip text, so_cho_con_lai bigint, sy_so text, phong text, nha text, 
-hinh_thuc_thi text, ma_gv text, ten_gv text, ghi_chu text, ngay_bd timestamp with time zone, ngay_kt timestamp with time zone, khoa text, bo_mon text, so_tc text
-, ts_tiet text, lt text, bt text, btl text, thtn text, tu_hoc text)`
-	CreateTableRegisterSubject = `CREATE TABLE ?shard.register_subject (id bigint DEFAULT ?shard.next_id(), ma_sv text, id_mon bigint, ma_mon_hoc text)`
+	CREATETABLETKB = `CREATE TABLE ?shard.tkbs (id bigint DEFAULT ?shard.next_id(), ma_mon_hoc text,ten_mon text, lop text, 
+	khoa_nganh text, nganh text, nhom text, to_hop text, to_th text, thu text, kip text, so_cho_con_lai bigint, sy_so text, 
+	phong text, nha text,hinh_thuc_thi text, ma_gv text, ten_gv text, ghi_chu text, ngay_bd timestamp with time zone, 
+	ngay_kt timestamp with time zone, khoa text, bo_mon text, so_tc text, ts_tiet text, lt text, bt text, btl text, thtn text, tu_hoc text)`
+	CREATETABLEREGISTSUBJECT = `CREATE TABLE ?shard.register_subject (id bigint DEFAULT ?shard.next_id(), ma_sv text, id_mon bigint, ma_mon_hoc text)`
 )

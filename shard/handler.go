@@ -18,9 +18,9 @@ func createShard(shard *pg.DB) error {
 	queries := []string{
 		`DROP SCHEMA IF EXISTS ?shard CASCADE`,
 		`CREATE SCHEMA ?shard`,
-		sqlFuncs,
-		CreatTableTKB,
-		CreateTableRegisterSubject,
+		SQLFUNCS,
+		CREATETABLETKB,
+		CREATETABLEREGISTSUBJECT,
 	}
 
 	for _, q := range queries {
