@@ -105,7 +105,7 @@ func transferDataToShard(cluster *sharding.Cluster) error {
 		wg.Add(1)
 		go func(idx model.TKB, wg *sync.WaitGroup) {
 			defer wg.Done()
-			err := CreateTKB(cluster, changeDataType(idx))
+			err := NewTKB().CreateTKB(cluster, changeDataType(idx))
 			if err != nil {
 				panic(err)
 			}
