@@ -22,7 +22,7 @@ func RegistSubject(c *fiber.Ctx) error {
 		NhomLop:  body.NhomLop,
 		MaMonHoc: body.MaMon,
 	}
-	tkb, err := shard.GetTKB(shard.Cluster, int64(helper.HashToInt(body.MaMon+body.NhomLop+"1464")))
+	tkb, err := shard.NewTKB().GetTKB(shard.Cluster, int64(helper.HashToInt(body.MaMon+body.NhomLop+"1464")))
 	if err != nil {
 		return getFail(c)
 	}
@@ -36,7 +36,7 @@ func RegistSubject(c *fiber.Ctx) error {
 
 	go func(wg *sync.WaitGroup) error {
 		defer wg.Done()
-		err := shard.CreateRS(shard.Cluster, rs)
+		err := shard.NewRS().CreateRS(shard.Cluster, rs)
 		if err != nil {
 			return createFail(c)
 		}
@@ -46,7 +46,7 @@ func RegistSubject(c *fiber.Ctx) error {
 	go func(wg *sync.WaitGroup) error {
 		defer wg.Done()
 		tkb.SoChoConLai -= 1
-		err1 := shard.UpdateTKB(shard.Cluster, tkb)
+		err1 := shard.NewTKB().UpdateTKB(shard.Cluster, tkb)
 		if err1 != nil {
 			return updateFail(c)
 		}
@@ -73,7 +73,7 @@ func UnregistSubject(c *fiber.Ctx) error {
 		NhomLop:  body.NhomLop,
 		MaMonHoc: body.MaMon,
 	}
-	tkb, err := shard.GetTKB(shard.Cluster, int64(helper.HashToInt(body.MaMon+body.NhomLop+"1464")))
+	tkb, err := shard.NewTKB().GetTKB(shard.Cluster, int64(helper.HashToInt(body.MaMon+body.NhomLop+"1464")))
 	if err != nil {
 		return getFail(c)
 	}
@@ -85,7 +85,7 @@ func UnregistSubject(c *fiber.Ctx) error {
 
 	go func(wg *sync.WaitGroup) error {
 		defer wg.Done()
-		err := shard.DeleteRS(shard.Cluster, rs)
+		err := shard.NewRS().DeleteRS(shard.Cluster, rs)
 		if err != nil {
 			return deleteFail(c)
 		}
@@ -95,7 +95,7 @@ func UnregistSubject(c *fiber.Ctx) error {
 	go func(wg *sync.WaitGroup) error {
 		defer wg.Done()
 		tkb.SoChoConLai += 1
-		err1 := shard.UpdateTKB(shard.Cluster, tkb)
+		err1 := shard.NewTKB().UpdateTKB(shard.Cluster, tkb)
 		if err1 != nil {
 			return updateFail(c)
 		}
