@@ -2,10 +2,9 @@ package excel
 
 import (
 	"fmt"
-	"gorm.io/sharding"
 	"shrading/connection"
+	"shrading/helper"
 	"shrading/model"
-	"shrading/old_db"
 	"strconv"
 	"time"
 )
@@ -13,6 +12,7 @@ import (
 func ReadDataFromExcel() error {
 	var check = true
 	var tkb *model.TKB
+	var listTKB []*model.TKB
 
 	conn, err := connection.Excelconn()
 	if err != nil {
@@ -21,6 +21,7 @@ func ReadDataFromExcel() error {
 
 	if check {
 		for i := 13; i <= 1525; i++ {
+			tt, _ := conn.GetCellValue("DKGD", "A"+strconv.Itoa(i))
 			maMonHoc, _ := conn.GetCellValue("DKGD", "B"+strconv.Itoa(i))
 			tenMon, _ := conn.GetCellValue("DKGD", "C"+strconv.Itoa(i))
 			lop, _ := conn.GetCellValue("DKGD", "D"+strconv.Itoa(i))
@@ -50,7 +51,8 @@ func ReadDataFromExcel() error {
 			tuHoc, _ := conn.GetCellValue("DKGD", "AT"+strconv.Itoa(i))
 
 			tkb = &model.TKB{
-				ID:          sharding.PKSnowflake,
+				ID: uint(helper.HashToInt(maMonHoc + nhom + tt)),
+				//ID:          sharding.PKSnowflake,
 				MaMonHoc:    maMonHoc,
 				TenMon:      tenMon,
 				Lop:         lop,
@@ -80,10 +82,17 @@ func ReadDataFromExcel() error {
 				TuHoc:       tuHoc,
 			}
 
-			_, err := old_db.CreatOneTKB(tkb)
-			if err != nil {
-				fmt.Println(err)
-			}
+			listTKB = append(listTKB, tkb)
+
+			//_, err := model.CreatOneTKB(tkb)
+			//if err != nil {
+			//	fmt.Println(err)
+			//}
+		}
+
+		_, err := model.CreateManyTKB(listTKB)
+		if err != nil {
+			fmt.Println(err)
 		}
 	}
 

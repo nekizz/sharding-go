@@ -88,7 +88,6 @@ func DoShard(c *fiber.Ctx) error {
 		})
 	}
 
-	fmt.Println("shrad database successful")
 	return nil
 }
 

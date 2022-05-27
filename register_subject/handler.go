@@ -1,7 +1,9 @@
 package register_subject
 
 import (
+	"fmt"
 	"github.com/gofiber/fiber/v2"
+	"shrading/helper"
 	"shrading/shard"
 	"sync"
 )
@@ -15,18 +17,20 @@ func RegistSubject(c *fiber.Ctx) error {
 	var wg sync.WaitGroup
 
 	rs := &shard.RegisterSubject{
-		ID:       uint(body.ID),
+		ID:       uint(helper.HashToInt(body.MaMon + body.NhomLop + "1464")),
 		MaSV:     body.MaSV,
-		IDMon:    uint(body.IDMon),
+		NhomLop:  body.NhomLop,
 		MaMonHoc: body.MaMon,
 	}
-	tkb, err := shard.GetTKB(shard.Cluster, int64(rs.IDMon))
+	tkb, err := shard.GetTKB(shard.Cluster, int64(helper.HashToInt(body.MaMon+body.NhomLop+"1464")))
 	if err != nil {
 		return getFail(c)
 	}
 	if err := validateTKBSlot(c, tkb); err != nil {
 		return err
 	}
+	fmt.Println(helper.HashToInt(body.MaMon + body.NhomLop + "1464"))
+	fmt.Println(tkb)
 
 	wg.Add(2)
 
@@ -64,12 +68,12 @@ func UnregistSubject(c *fiber.Ctx) error {
 	var wg sync.WaitGroup
 
 	rs := &shard.RegisterSubject{
-		ID:       uint(body.ID),
-		IDMon:    uint(body.IDMon),
+		ID:       uint(helper.HashToInt(body.MaMon + body.NhomLop + "1464")),
 		MaSV:     body.MaSV,
+		NhomLop:  body.NhomLop,
 		MaMonHoc: body.MaMon,
 	}
-	tkb, err := shard.GetTKB(shard.Cluster, int64(rs.IDMon))
+	tkb, err := shard.GetTKB(shard.Cluster, int64(helper.HashToInt(body.MaMon+body.NhomLop+"1464")))
 	if err != nil {
 		return getFail(c)
 	}
@@ -102,8 +106,4 @@ func UnregistSubject(c *fiber.Ctx) error {
 	wg.Wait()
 
 	return unregistSuccess(c)
-}
-
-func deHashToID(s string) int {
-	return 1
 }

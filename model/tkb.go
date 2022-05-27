@@ -47,7 +47,6 @@ func ListAll(limit int, offset int) ([]TKB, int64, error) {
 	if err := countQuery.Count(&count).Error; nil != err {
 		return nil, 0, err
 	}
-
 	if err := listQuery.Find(&listTKB).Limit(limit).Offset(offset).Error; nil != err {
 		return nil, 0, err
 	}
@@ -55,12 +54,31 @@ func ListAll(limit int, offset int) ([]TKB, int64, error) {
 	return listTKB, count, nil
 }
 
+func GetOne(id int) (*TKB, error) {
+	var tkb *TKB
+
+	query := connection.DB.Model(&tkb).Where("id = ?", id).Find(&tkb)
+	if err := query.Error; err != nil {
+		return nil, err
+	}
+
+	return tkb, nil
+}
+
 func CreatOneTKB(tkb *TKB) (*TKB, error) {
 	query := connection.DB.Model(&TKB{}).Create(tkb)
-
 	if err := query.Error; nil != err {
 		return nil, err
 	}
 
 	return tkb, nil
+}
+
+func CreateManyTKB(list []*TKB) ([]*TKB, error) {
+	query := connection.DB.Model(&TKB{}).Create(list)
+	if err := query.Error; nil != err {
+		return nil, err
+	}
+
+	return list, nil
 }

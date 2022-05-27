@@ -1,8 +1,10 @@
 package helper
 
 import (
+	"crypto/sha1"
 	"fmt"
 	"gopkg.in/go-playground/validator.v9"
+	"hash/fnv"
 	"strconv"
 )
 
@@ -28,4 +30,16 @@ func StringToInt(s string) int {
 		fmt.Println(err)
 	}
 	return val
+}
+
+func HashToInt(hashString string) uint32 {
+	//sha hash
+	sha := sha1.New()
+	sha.Write([]byte(hashString))
+	bs := sha.Sum(nil)
+	shaString := fmt.Sprintf("%x", bs)
+
+	h := fnv.New32a()
+	h.Write([]byte(shaString))
+	return h.Sum32()
 }

@@ -45,8 +45,8 @@ type RegisterSubject struct {
 
 	ID       uint
 	MaSV     string
-	IDMon    uint
 	MaMonHoc string
+	NhomLop  string
 }
 
 //TKB Activity
