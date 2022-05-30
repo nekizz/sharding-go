@@ -9,6 +9,7 @@ import (
 func changeDataType(tkb model.TKB) *TKB {
 	return &TKB{
 		ID:          tkb.ID,
+		HashKey:     tkb.HashKey,
 		MaMonHoc:    tkb.MaMonHoc,
 		TenMon:      tkb.TenMon,
 		Lop:         tkb.Lop,
@@ -19,9 +20,9 @@ func changeDataType(tkb model.TKB) *TKB {
 		ToTH:        tkb.ToTH,
 		Thu:         tkb.Thu,
 		Kip:         tkb.Kip,
+		SoChoConLai: uint(helper.StringToInt(tkb.SySo)),
 		SySo:        tkb.SySo,
 		Phong:       tkb.Phong,
-		SoChoConLai: uint(helper.StringToInt(tkb.SySo)),
 		Nha:         tkb.Nha,
 		HinhThucThi: tkb.HinhThucThi,
 		MaGV:        tkb.MaGV,

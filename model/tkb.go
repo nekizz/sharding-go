@@ -7,6 +7,7 @@ import (
 
 type TKB struct {
 	ID          uint
+	HashKey     uint
 	MaMonHoc    string
 	TenMon      string
 	Lop         string

@@ -8,6 +8,7 @@ import (
 func Version20220512093400(tx *gorm.DB) error {
 	type TKB struct {
 		ID          uint   `gorm:"AUTO_INCREMENT;NOT NULL;PRIMARY_KEY"`
+		HashKey     uint   `gorm:"AUTO_INCREMENT;NOT NULL"`
 		MaMonHoc    string `gorm:"CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;NOT NULL"`
 		TenMon      string `gorm:"CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;NOT NULL"`
 		Lop         string `gorm:"CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"`

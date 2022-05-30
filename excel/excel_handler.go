@@ -51,8 +51,8 @@ func ReadDataFromExcel() error {
 			tuHoc, _ := conn.GetCellValue("DKGD", "AT"+strconv.Itoa(i))
 
 			tkb = &model.TKB{
-				ID: uint(helper.HashToInt(maMonHoc + nhom + tt)),
-				//ID:          sharding.PKSnowflake,
+				ID:          uint(helper.HashToInt(maMonHoc + nhom + tt)),
+				HashKey:     uint(helper.StringToInt(tt)),
 				MaMonHoc:    maMonHoc,
 				TenMon:      tenMon,
 				Lop:         lop,
@@ -60,6 +60,7 @@ func ReadDataFromExcel() error {
 				Nganh:       nganh,
 				Nhom:        nhom,
 				ToHop:       toHop,
+				ToTH:        "",
 				Thu:         thu,
 				Kip:         kip,
 				SySo:        sySo,

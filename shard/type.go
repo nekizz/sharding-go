@@ -9,6 +9,7 @@ type TKB struct {
 	tableName string `sql:"?shard.tkbs"`
 
 	ID          uint
+	HashKey     uint
 	MaMonHoc    string
 	TenMon      string
 	Lop         string
@@ -38,6 +39,10 @@ type TKB struct {
 	BTL         string
 	THTN        string
 	TuHoc       string
+}
+
+type ABC struct {
+	name string
 }
 
 type RegisterSubject struct {

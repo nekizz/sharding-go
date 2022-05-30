@@ -32,3 +32,14 @@ func init() {
 
 	fmt.Println(fmt.Sprintf("POSTGRESSQL connection established"))
 }
+
+func PostgresConn(dsn string) *gorm.DB {
+	db, err := gorm.Open(postgres.New(postgres.Config{DSN: dsn}), &gorm.Config{})
+	if err != nil {
+		panic(err)
+		fmt.Println("CONNECT POSTGRESSQL FAILED!")
+		fmt.Println(err.Error())
+	}
+
+	return db
+}
