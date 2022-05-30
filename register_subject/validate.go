@@ -111,15 +111,24 @@ func deleteFail(c *fiber.Ctx) error {
 	})
 }
 
-func checkRegistSubject(count int, c *fiber.Ctx) error {
-	if count >= 1 {
+func countFail(c *fiber.Ctx) error {
+	return c.JSON(helper.Response{
+		Status:  true,
+		Data:    nil,
+		Message: "Fail to count",
+		Error:   helper.Error{},
+	})
+}
+
+func checkRegistSubject(c *fiber.Ctx, count int) error {
+	if count > 0 {
 		return c.JSON(helper.Response{
 			Status:  false,
 			Message: "Mon nay da dc dki",
 			Data:    nil,
 			Error:   helper.Error{},
 		})
+	} else {
+		return nil
 	}
-
-	return nil
 }

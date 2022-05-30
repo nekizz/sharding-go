@@ -1,7 +1,6 @@
 package register_subject
 
 import (
-	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 	"shrading/connection"
@@ -13,14 +12,51 @@ import (
 
 func RegistSubject(c *fiber.Ctx) error {
 	body := new(RegisterSubjectBody)
-	if err := validateStruct(c, body); err != nil {
-		return err
+	if err := c.BodyParser(body); err != nil {
+		return c.JSON(helper.Response{
+			Status:  false,
+			Data:    nil,
+			Message: "Missing params.",
+			Error: helper.Error{
+				ErrorCode:    constant.ErrorCode["ERROR_MISSING_PARAMS"],
+				ErrorMessage: "Missing params.",
+			},
+		})
+	}
+	if errVC := helper.ValidateStruct(body); errVC != nil {
+		return c.JSON(helper.Response{
+			Status:  false,
+			Data:    nil,
+			Message: "Missing params.",
+			Error: helper.Error{
+				ErrorCode:    constant.ErrorCode["ERROR_MISSING_PARAMS"],
+				ErrorMessage: "Missing params.",
+			},
+		})
 	}
 
 	var wg sync.WaitGroup
 	var regist []*shard.RegisterSubject
 
 	id := uint(helper.HashToInt(body.MaMon + body.NhomLop + "1464"))
+	count, err := shard.Cluster.Shard(int64(id)).Model(&regist).Where("ma_sv = ? AND ma_mon_hoc = ?", body.MaSV, body.MaMon).Count()
+	if err != nil {
+		return c.JSON(helper.Response{
+			Status:  true,
+			Data:    nil,
+			Message: "Fail to create",
+			Error:   helper.Error{},
+		})
+	}
+	if count > 0 {
+		return c.JSON(helper.Response{
+			Status:  false,
+			Message: "Mon nay da dc dki",
+			Data:    nil,
+			Error:   helper.Error{},
+		})
+	}
+
 	rs := &shard.RegisterSubject{
 		ID:       id,
 		MaSV:     body.MaSV,
@@ -29,55 +65,84 @@ func RegistSubject(c *fiber.Ctx) error {
 	}
 	tkb, err := shard.NewTKB().GetTKB(shard.Cluster, int64(id))
 	if err != nil {
-		return getFail(c)
+		return c.JSON(helper.Response{
+			Status:  false,
+			Data:    nil,
+			Message: "get TKB fail",
+			Error:   helper.Error{},
+		})
+	}
+	if errVTS := validateTKBSlot(c, tkb); errVTS != nil {
+		return errVTS
 	}
 
-	if err := validateTKBSlot(c, tkb); err != nil {
-		return err
-	}
+	wg.Add(2)
 
-	count, err := shard.Cluster.Shard(int64(id)).Model(&regist).Where("ma_sv = ? AND ma_mon_hoc = ?", body.MaSV, body.MaMon).Count()
-	fmt.Println(count)
-	if err != nil {
-		fmt.Println(err)
-	}
-	if err := checkRegistSubject(count, c); err != nil {
-		return err
-	} else {
+	go func(wg *sync.WaitGroup) error {
+		defer wg.Done()
 
-		wg.Add(2)
+		err = shard.NewRS().CreateRS(shard.Cluster, rs)
+		if err != nil {
+			return c.JSON(helper.Response{
+				Status:  true,
+				Data:    nil,
+				Message: "Fail to create",
+				Error:   helper.Error{},
+			})
+		}
+		return nil
+	}(&wg)
 
-		go func(wg *sync.WaitGroup) error {
-			defer wg.Done()
+	go func(wg *sync.WaitGroup) error {
+		defer wg.Done()
+		tkb.SoChoConLai -= 1
+		err1 := shard.NewTKB().UpdateTKB(shard.Cluster, tkb)
+		if err1 != nil {
+			return c.JSON(helper.Response{
+				Status:  true,
+				Data:    nil,
+				Message: "Fail to update",
+				Error:   helper.Error{},
+			})
+		}
+		return nil
+	}(&wg)
 
-			err = shard.NewRS().CreateRS(shard.Cluster, rs)
-			if err != nil {
-				return createFail(c)
-			}
-			return nil
-		}(&wg)
+	wg.Wait()
 
-		go func(wg *sync.WaitGroup) error {
-			defer wg.Done()
-			tkb.SoChoConLai -= 1
-			err1 := shard.NewTKB().UpdateTKB(shard.Cluster, tkb)
-			if err1 != nil {
-				return updateFail(c)
-			}
-			return nil
-		}(&wg)
+	return c.JSON(helper.Response{
+		Status:  true,
+		Data:    nil,
+		Message: "Unregist subject success",
+		Error:   helper.Error{},
+	})
 
-		wg.Wait()
-
-		return registSuccess(c)
-	}
 }
 
 func UnregistSubject(c *fiber.Ctx) error {
 
 	body := new(RegisterSubjectBody)
-	if err := validateStruct(c, body); err != nil {
-		return err
+	if err := c.BodyParser(body); err != nil {
+		return c.JSON(helper.Response{
+			Status:  false,
+			Data:    nil,
+			Message: "Missing params.",
+			Error: helper.Error{
+				ErrorCode:    constant.ErrorCode["ERROR_MISSING_PARAMS"],
+				ErrorMessage: "Missing params.",
+			},
+		})
+	}
+	if errVC := helper.ValidateStruct(body); errVC != nil {
+		return c.JSON(helper.Response{
+			Status:  false,
+			Data:    nil,
+			Message: "Missing params.",
+			Error: helper.Error{
+				ErrorCode:    constant.ErrorCode["ERROR_MISSING_PARAMS"],
+				ErrorMessage: "Missing params.",
+			},
+		})
 	}
 
 	var wg sync.WaitGroup
@@ -90,7 +155,12 @@ func UnregistSubject(c *fiber.Ctx) error {
 	}
 	tkb, err := shard.NewTKB().GetTKB(shard.Cluster, int64(helper.HashToInt(body.MaMon+body.NhomLop+"1464")))
 	if err != nil {
-		return getFail(c)
+		return c.JSON(helper.Response{
+			Status:  false,
+			Data:    nil,
+			Message: "get TKB fail",
+			Error:   helper.Error{},
+		})
 	}
 	if err := validateTKBSlot(c, tkb); err != nil {
 		return err
@@ -102,7 +172,12 @@ func UnregistSubject(c *fiber.Ctx) error {
 		defer wg.Done()
 		err := shard.NewRS().DeleteRS(shard.Cluster, rs)
 		if err != nil {
-			return deleteFail(c)
+			return c.JSON(helper.Response{
+				Status:  true,
+				Data:    nil,
+				Message: "Fail to delete",
+				Error:   helper.Error{},
+			})
 		}
 		return nil
 	}(&wg)
@@ -112,7 +187,12 @@ func UnregistSubject(c *fiber.Ctx) error {
 		tkb.SoChoConLai += 1
 		err1 := shard.NewTKB().UpdateTKB(shard.Cluster, tkb)
 		if err1 != nil {
-			return updateFail(c)
+			return c.JSON(helper.Response{
+				Status:  true,
+				Data:    nil,
+				Message: "Fail to update",
+				Error:   helper.Error{},
+			})
 		}
 
 		return nil
@@ -120,7 +200,12 @@ func UnregistSubject(c *fiber.Ctx) error {
 
 	wg.Wait()
 
-	return unregistSuccess(c)
+	return c.JSON(helper.Response{
+		Status:  true,
+		Data:    nil,
+		Message: "Unregist subject success",
+		Error:   helper.Error{},
+	})
 }
 
 func checkIntoDB(check int, numShard int) *gorm.DB {
