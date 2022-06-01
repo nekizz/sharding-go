@@ -2,6 +2,8 @@ package model
 
 import (
 	"shrading/connection"
+	"shrading/helper"
+	"strconv"
 	"time"
 )
 
@@ -82,4 +84,17 @@ func CreateManyTKB(list []*TKB) ([]*TKB, error) {
 	}
 
 	return list, nil
+}
+
+func SyncTKBToElasticSearch() error {
+	listTKB, _, err := ListAll(2000, 0)
+	if err != nil {
+		return err
+	}
+	if len(listTKB) > 0 {
+		for _, idx := range listTKB {
+			helper.InsertToElasticLivechat(idx, "tkb", strconv.Itoa(int(idx.ID)), "_doc")
+		}
+	}
+	return nil
 }
