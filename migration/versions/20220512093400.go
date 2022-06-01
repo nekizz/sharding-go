@@ -17,6 +17,7 @@ func Version20220512093400(tx *gorm.DB) error {
 		Nhom        string `gorm:"CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;NOT NULL"`
 		ToHop       string `gorm:"CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"`
 		ToTH        string `gorm:"CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"`
+		SoLop       string `gorm:"CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"`
 		Thu         string `gorm:"CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;NOT NULL"`
 		Kip         string `gorm:"CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;NOT NULL"`
 		SySo        string `gorm:"CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;NOT NULL"`

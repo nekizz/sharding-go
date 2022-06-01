@@ -18,6 +18,7 @@ func changeDataType(tkb model.TKB) *TKB {
 		Nhom:        tkb.Nhom,
 		ToHop:       tkb.ToHop,
 		ToTH:        tkb.ToTH,
+		SoLop:       tkb.SoLop,
 		Thu:         tkb.Thu,
 		Kip:         tkb.Kip,
 		SoChoConLai: uint(helper.StringToInt(tkb.SySo)),

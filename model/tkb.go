@@ -18,6 +18,7 @@ type TKB struct {
 	Nhom        string
 	ToHop       string
 	ToTH        string
+	SoLop       string
 	Thu         string
 	Kip         string
 	SySo        string
@@ -93,7 +94,7 @@ func SyncTKBToElasticSearch() error {
 	}
 	if len(listTKB) > 0 {
 		for _, idx := range listTKB {
-			helper.InsertToElasticLivechat(idx, "tkb", strconv.Itoa(int(idx.ID)), "_doc")
+			helper.InsertToElasticTKB(idx, "tkb", strconv.Itoa(int(idx.ID)), "_doc")
 		}
 	}
 	return nil

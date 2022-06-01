@@ -29,6 +29,8 @@ func ReadDataFromExcel() error {
 			nganh, _ := conn.GetCellValue("DKGD", "F"+strconv.Itoa(i))
 			nhom, _ := conn.GetCellValue("DKGD", "G"+strconv.Itoa(i))
 			toHop, _ := conn.GetCellValue("DKGD", "H"+strconv.Itoa(i))
+			toTH, _ := conn.GetCellValue("DKGD", "I"+strconv.Itoa(i))
+			soLop, _ := conn.GetCellValue("DKGD", "J"+strconv.Itoa(i))
 			thu, _ := conn.GetCellValue("DKGD", "K"+strconv.Itoa(i))
 			kip, _ := conn.GetCellValue("DKGD", "L"+strconv.Itoa(i))
 			sySo, _ := conn.GetCellValue("DKGD", "M"+strconv.Itoa(i))
@@ -60,7 +62,8 @@ func ReadDataFromExcel() error {
 				Nganh:       nganh,
 				Nhom:        nhom,
 				ToHop:       toHop,
-				ToTH:        "",
+				ToTH:        toTH,
+				SoLop:       soLop,
 				Thu:         thu,
 				Kip:         kip,
 				SySo:        sySo,
@@ -85,10 +88,6 @@ func ReadDataFromExcel() error {
 
 			listTKB = append(listTKB, tkb)
 
-			//_, err := model.CreatOneTKB(tkb)
-			//if err != nil {
-			//	fmt.Println(err)
-			//}
 		}
 
 		_, err := model.CreateManyTKB(listTKB)

@@ -18,6 +18,7 @@ type TKB struct {
 	Nhom        string
 	ToHop       string
 	ToTH        string
+	SoLop       string
 	Thu         string
 	Kip         string
 	SoChoConLai uint
