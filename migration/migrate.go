@@ -7,7 +7,6 @@ import (
 	"gorm.io/gorm"
 	"os"
 	"shrading/connection"
-	"shrading/constant"
 	"shrading/excel"
 	"shrading/helper"
 	"time"
@@ -50,10 +49,7 @@ func MigrateAndSync(c *fiber.Ctx) error {
 			Status:  false,
 			Data:    nil,
 			Message: "Migrate fail.",
-			Error: helper.Error{
-				ErrorCode:    constant.ErrorCode["ERROR_MISSING_PARAMS"],
-				ErrorMessage: "Missing params.",
-			},
+			Error:   helper.Error{},
 		})
 	}
 
@@ -63,10 +59,7 @@ func MigrateAndSync(c *fiber.Ctx) error {
 			Status:  false,
 			Data:    nil,
 			Message: "Transfer data to database fail.",
-			Error: helper.Error{
-				ErrorCode:    constant.ErrorCode["ERROR_MISSING_PARAMS"],
-				ErrorMessage: "Missing params.",
-			},
+			Error:   helper.Error{},
 		})
 	}
 
@@ -74,9 +67,6 @@ func MigrateAndSync(c *fiber.Ctx) error {
 		Status:  true,
 		Data:    nil,
 		Message: "Transfer data to database successful.",
-		Error: helper.Error{
-			ErrorCode:    constant.ErrorCode["ERROR_MISSING_PARAMS"],
-			ErrorMessage: "Missing params.",
-		},
+		Error:   helper.Error{},
 	})
 }

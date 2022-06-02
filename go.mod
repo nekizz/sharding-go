@@ -3,6 +3,7 @@ module shrading
 go 1.18
 
 require (
+	github.com/elastic/go-elasticsearch/v7 v7.17.1
 	github.com/go-gormigrate/gormigrate/v2 v2.0.0
 	github.com/go-pg/pg v8.0.7+incompatible
 	github.com/go-pg/sharding v6.6.4+incompatible
@@ -11,13 +12,10 @@ require (
 	gopkg.in/go-playground/validator.v9 v9.31.0
 	gorm.io/driver/postgres v1.3.5
 	gorm.io/gorm v1.23.5
-	gorm.io/sharding v0.5.1
 )
 
 require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
-	github.com/bwmarrin/snowflake v0.3.0 // indirect
-	github.com/elastic/go-elasticsearch/v7 v7.17.1 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
@@ -32,7 +30,6 @@ require (
 	github.com/jinzhu/now v1.1.4 // indirect
 	github.com/klauspost/compress v1.15.0 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
-	github.com/longbridgeapp/sqlparser v0.3.1 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/onsi/ginkgo v1.7.0 // indirect
 	github.com/onsi/gomega v1.4.3 // indirect
@@ -48,5 +45,7 @@ require (
 	golang.org/x/sys v0.0.0-20220227234510-4e6760a101f9 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
+	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gorm.io/driver/mysql v1.3.2 // indirect
 	mellium.im/sasl v0.2.1 // indirect
 )

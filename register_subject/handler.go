@@ -20,7 +20,7 @@ func RegistSubject(c *fiber.Ctx) error {
 			Message: "Missing params.",
 			Error: helper.Error{
 				ErrorCode:    constant.ErrorCode["ERROR_MISSING_PARAMS"],
-				ErrorMessage: "Missing params.",
+				ErrorMessage: "Missing params1.",
 			},
 		})
 	}
@@ -31,7 +31,7 @@ func RegistSubject(c *fiber.Ctx) error {
 			Message: "Missing params.",
 			Error: helper.Error{
 				ErrorCode:    constant.ErrorCode["ERROR_MISSING_PARAMS"],
-				ErrorMessage: "Missing params.",
+				ErrorMessage: "Missing params2.",
 			},
 		})
 	}
@@ -39,8 +39,7 @@ func RegistSubject(c *fiber.Ctx) error {
 	var wg sync.WaitGroup
 	//var regist []*shard.RegisterSubject
 
-	id := uint(helper.HashToInt(body.MaMon + body.NhomLop + "1464"))
-
+	id := uint(helper.HashToInt(body.MaMon + body.NhomLop + strconv.Itoa(body.IDMon)))
 	//check trong csdl
 	//count, err := shard.Cluster.Shard(int64(id)).Model(&regist).Where("ma_sv = ? AND ma_mon_hoc = ?", body.MaSV, body.MaMon).Count()
 	//if err != nil {
