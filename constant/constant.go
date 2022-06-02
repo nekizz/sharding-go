@@ -14,4 +14,4 @@ var Sharding3 = "host=13.215.49.1 port=5434 user=root password=q2XLM027 dbname=s
 
 //var ELASTIC_SEARCH_LIVECHAT_CONFIG = []string{"localhost:9200"}
 
-var ELASTIC_SEARCH_LIVECHAT_CONFIG = []string{"http://localhost:9200/"}
+var ELASTIC_SEARCH_LIVECHAT_CONFIG = []string{"http://13.215.49.1:9200/"}

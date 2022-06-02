@@ -11,9 +11,16 @@ import (
 	"strings"
 )
 
-func QueryESTKB(index string, query map[string]interface{}) (map[string]interface{}, error) {
-	var mapResp map[string]interface{}
-	connectES := connection.ConnectLivechatElastic()
+func QueryES(index string, query map[string]interface{}) (ESResultRegistSubject, int, error) {
+	var rs ESResultRegistSubject
+	//var listSourceUser []ESSourceUser
+	var totalRecord int
+
+	connectES, errES := connection.ConnectElastic()
+	if errES != nil {
+		fmt.Println("connect ES error")
+		return ESResultRegistSubject{}, 0, errES
+	}
 	bodySendEs, _ := json.Marshal(query)
 	res, err := connectES.Search(
 		connectES.Search.WithContext(context.Background()),
@@ -23,19 +30,22 @@ func QueryESTKB(index string, query map[string]interface{}) (map[string]interfac
 		connectES.Search.WithPretty())
 
 	if err != nil {
-		fmt.Println("search ES error", err)
-		return mapResp, err
-	} else {
-		defer res.Body.Close()
-		mapResp := make(map[string]interface{})
-		if err := json.NewDecoder(res.Body).Decode(&mapResp); err == nil {
-			return mapResp, nil
-		}
+		fmt.Println("get user from ES error", err)
+		return ESResultRegistSubject{}, 0, err
 	}
-	return mapResp, nil
+
+	defer res.Body.Close()
+	if err := json.NewDecoder(res.Body).Decode(&rs); err != nil {
+		fmt.Println("decode from ES error", err)
+		return ESResultRegistSubject{}, 0, err
+	}
+
+	totalRecord = rs.Hits.Total.Value
+	fmt.Println(totalRecord)
+	return rs, totalRecord, nil
 }
 
-func InsertToElasticTKB(docStruct interface{}, index string, documentID string, documentType string) (interface{}, error) {
+func InsertToElastic(docStruct interface{}, index string, documentID string, documentType string) (interface{}, error) {
 	doc, err := json.Marshal(docStruct)
 
 	if err != nil {
@@ -82,7 +92,7 @@ func InsertToElasticTKB(docStruct interface{}, index string, documentID string, 
 	}
 }
 
-func DeleteByQueryESTKB(index string, query map[string]interface{}) (map[string]interface{}, error) {
+func DeleteByQueryES(index string, query map[string]interface{}) (map[string]interface{}, error) {
 	var mapResp map[string]interface{}
 	connectES := connection.ConnectLivechatElastic()
 	bodySendEs, _ := json.Marshal(query)

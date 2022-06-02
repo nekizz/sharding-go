@@ -94,7 +94,7 @@ func SyncTKBToElasticSearch() error {
 	}
 	if len(listTKB) > 0 {
 		for _, idx := range listTKB {
-			helper.InsertToElasticTKB(idx, "tkb", strconv.Itoa(int(idx.ID)), "_doc")
+			helper.InsertToElastic(idx, "tkb", strconv.Itoa(int(idx.ID)), "_doc")
 		}
 	}
 	return nil

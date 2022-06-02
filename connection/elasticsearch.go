@@ -58,5 +58,7 @@ func ConnectLivechatElastic() *elasticsearch.Client {
 		log.Println("ConnectLivechatElastic ERROR! CONNECT IS EMPTY!")
 	}
 
+	fmt.Println("Connect elasticsearch successful")
+
 	return elastic
 }
