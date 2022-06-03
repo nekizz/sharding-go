@@ -18,7 +18,7 @@ func init() {
 func ConnectElastic() (*elasticsearch.Client, error) {
 	cfg := elasticsearch.Config{
 		Addresses: []string{
-			constant.ELASTIC_SEARCH_LIVECHAT_CONFIG[0],
+			constant.ELASTIC_SEARCH_CONFIG[0],
 		},
 		RetryOnStatus: []int{429, 502, 503, 504},
 		RetryBackoff: func(i int) time.Duration {
@@ -41,7 +41,7 @@ func ConnectElastic() (*elasticsearch.Client, error) {
 
 func ConnectLivechatElastic() *elasticsearch.Client {
 	cfg := elasticsearch.Config{
-		Addresses:     constant.ELASTIC_SEARCH_LIVECHAT_CONFIG,
+		Addresses:     constant.ELASTIC_SEARCH_CONFIG,
 		RetryOnStatus: []int{429, 502, 503, 504},
 		RetryBackoff: func(i int) time.Duration {
 			// A simple exponential delay
