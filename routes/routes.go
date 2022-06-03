@@ -23,4 +23,5 @@ func registerTKB(app *fiber.App) {
 	app.Post("/unregist_subject", register_subject.UnregistSubject)
 	app.Post("/sharding", shard.DoShard)
 	app.Post("/migration", migration.MigrateAndSync)
+	app.Post("/sync_to_elasticsearch", register_subject.UploadDataToES)
 }

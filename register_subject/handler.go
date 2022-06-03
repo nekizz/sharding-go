@@ -6,6 +6,7 @@ import (
 	"shrading/connection"
 	"shrading/constant"
 	"shrading/helper"
+	"shrading/model"
 	"shrading/shard"
 	"strconv"
 	"sync"
@@ -139,7 +140,7 @@ func RegistSubject(c *fiber.Ctx) error {
 		err = shard.NewRS().CreateRS(shard.Cluster, rs)
 		if err != nil {
 			return c.JSON(helper.Response{
-				Status:  true,
+				Status:  false,
 				Data:    nil,
 				Message: "Fail to create",
 				Error:   helper.Error{},
@@ -154,7 +155,7 @@ func RegistSubject(c *fiber.Ctx) error {
 		_, err = helper.InsertToElastic(rs, "regist_subject", strconv.Itoa(int(rs.ID)), "_doc")
 		if err != nil {
 			return c.JSON(helper.Response{
-				Status:  true,
+				Status:  false,
 				Data:    nil,
 				Message: "Fail to create in elasticsearch",
 				Error:   helper.Error{},
@@ -169,7 +170,7 @@ func RegistSubject(c *fiber.Ctx) error {
 		err1 := shard.NewTKB().UpdateTKB(shard.Cluster, tkb)
 		if err1 != nil {
 			return c.JSON(helper.Response{
-				Status:  true,
+				Status:  false,
 				Data:    nil,
 				Message: "Fail to update",
 				Error:   helper.Error{},
@@ -277,7 +278,7 @@ func UnregistSubject(c *fiber.Ctx) error {
 		err := shard.NewRS().DeleteRS(shard.Cluster, rs)
 		if err != nil {
 			return c.JSON(helper.Response{
-				Status:  true,
+				Status:  false,
 				Data:    nil,
 				Message: "Fail to delete",
 				Error:   helper.Error{},
@@ -292,7 +293,7 @@ func UnregistSubject(c *fiber.Ctx) error {
 		_, err = helper.DeleteByQueryES("regist_subject", query)
 		if err != nil {
 			return c.JSON(helper.Response{
-				Status:  true,
+				Status:  false,
 				Data:    nil,
 				Message: "Fail to delete in elasticsearch",
 				Error:   helper.Error{},
@@ -307,7 +308,7 @@ func UnregistSubject(c *fiber.Ctx) error {
 		err1 := shard.NewTKB().UpdateTKB(shard.Cluster, tkb)
 		if err1 != nil {
 			return c.JSON(helper.Response{
-				Status:  true,
+				Status:  false,
 				Data:    nil,
 				Message: "Fail to update",
 				Error:   helper.Error{},
@@ -323,6 +324,25 @@ func UnregistSubject(c *fiber.Ctx) error {
 		Status:  true,
 		Data:    nil,
 		Message: "Unregist subject success",
+		Error:   helper.Error{},
+	})
+}
+
+func UploadDataToES(c *fiber.Ctx) error {
+	err := model.SyncTKBToElasticSearch()
+	if err != nil {
+		return c.JSON(helper.Response{
+			Status:  false,
+			Data:    nil,
+			Message: "fail to upload to elasticsearch",
+			Error:   helper.Error{},
+		})
+	}
+
+	return c.JSON(helper.Response{
+		Status:  true,
+		Data:    nil,
+		Message: "upload to elasticsearch successfully",
 		Error:   helper.Error{},
 	})
 }

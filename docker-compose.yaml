@@ -6,7 +6,7 @@ services:
     environment:
       - xpack.security.enabled=false
       - "discovery.type=single-node"
-      - ES_JAVA_OPTS=-Xmx3g
+      - ES_JAVA_OPTS=-Xmx2g
     networks:
       - es-net
     ports:
@@ -22,6 +22,29 @@ services:
       - elasticsearch
     ports:
       - 5601:5601
+
+  #kafka and zookeeper
+  zookeper:
+    container_name: go-zookeeper
+    image: confluentinc/cp-zookeeper:latest
+    restart: always
+    environment:
+      - ZOOKEEPER_CLIENT_PORT:2181
+    ports:
+      - 2181:2181
+  kafka:
+    container_name: go-kafka
+    image: confluentinc/cp-kafka:latest
+    restart: always
+    depends_on:
+      - zookeper
+    environment:
+      - KAFKA_ZOOKEEPER_CONNECT:zookeeper:2181
+      - KAFKA_ADVERTISED_LISTENERS:PLAINTEXT://localhost:29092
+    ports:
+      - 29091:29091
+
 networks:
   es-net:
     driver: bridge
+
