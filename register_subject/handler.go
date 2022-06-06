@@ -1,6 +1,7 @@
 package register_subject
 
 import (
+	"errors"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 	"shrading/connection"
@@ -92,7 +93,7 @@ func RegistSubject(c *fiber.Ctx) error {
 		return c.JSON(helper.Response{
 			Status:  false,
 			Data:    nil,
-			Message: "get TKB fail",
+			Message: "this subject doesn't exist",
 			Error:   helper.Error{},
 		})
 	}
@@ -120,12 +121,7 @@ func RegistSubject(c *fiber.Ctx) error {
 		//err = shard.NewRS().CreateRS(shard.Cluster, rs)
 		errI := tx.Insert(rs)
 		if errI != nil {
-			errorChanel <- c.JSON(helper.Response{
-				Status:  false,
-				Data:    nil,
-				Message: "Fail to create",
-				Error:   helper.Error{},
-			})
+			errorChanel <- errors.New("Fail to insert to database")
 			return
 		}
 
@@ -136,12 +132,7 @@ func RegistSubject(c *fiber.Ctx) error {
 		defer wg.Done()
 		_, err = helper.InsertToElastic(rs, "regist_subject", strconv.Itoa(int(rs.ID)), "_doc")
 		if err != nil {
-			errorChanel <- c.JSON(helper.Response{
-				Status:  false,
-				Data:    nil,
-				Message: "Fail to create in elasticsearch",
-				Error:   helper.Error{},
-			})
+			errorChanel <- errors.New("Fail to insert to elasticsearch")
 			return
 		}
 		errorChanel <- nil
@@ -152,12 +143,7 @@ func RegistSubject(c *fiber.Ctx) error {
 		tkb.SoChoConLai -= 1
 		errU := tx.Update(tkb)
 		if errU != nil {
-			errorChanel <- c.JSON(helper.Response{
-				Status:  false,
-				Data:    nil,
-				Message: "Fail to update",
-				Error:   helper.Error{},
-			})
+			errorChanel <- errors.New("Fail to update to tkb")
 			return
 		}
 		errorChanel <- nil
@@ -167,8 +153,20 @@ func RegistSubject(c *fiber.Ctx) error {
 
 	for i := 0; i < len(errorChanel); i++ {
 		if err := <-errorChanel; err != nil {
-			tx.Rollback()
-			return err
+			if errR := tx.Rollback(); errR != nil {
+				return c.JSON(helper.Response{
+					Status:  true,
+					Data:    nil,
+					Message: "Rollback fail",
+					Error:   helper.Error{},
+				})
+			}
+			return c.JSON(helper.Response{
+				Status:  true,
+				Data:    nil,
+				Message: err.Error(),
+				Error:   helper.Error{},
+			})
 		}
 	}
 
@@ -298,12 +296,7 @@ func UnregistSubject(c *fiber.Ctx) error {
 		//err := shard.NewRS().DeleteRS(shard.Cluster, rs)
 		err := tx.Delete(rs)
 		if err != nil {
-			errorChanel <- c.JSON(helper.Response{
-				Status:  false,
-				Data:    nil,
-				Message: "Fail to delete",
-				Error:   helper.Error{},
-			})
+			errorChanel <- errors.New("Fail to delete from database")
 			return
 		}
 		errorChanel <- nil
@@ -312,13 +305,9 @@ func UnregistSubject(c *fiber.Ctx) error {
 	go func(wg *sync.WaitGroup) {
 		defer wg.Done()
 		_, err = helper.DeleteByQueryES("regist_subject", query)
+		err = errors.New("okela")
 		if err != nil {
-			errorChanel <- c.JSON(helper.Response{
-				Status:  false,
-				Data:    nil,
-				Message: "Fail to delete in elasticsearch",
-				Error:   helper.Error{},
-			})
+			errorChanel <- errors.New("Fail to delete from elasticsearch")
 			return
 		}
 		errorChanel <- nil
@@ -329,12 +318,7 @@ func UnregistSubject(c *fiber.Ctx) error {
 		tkb.SoChoConLai += 1
 		err1 := tx.Update(tkb)
 		if err1 != nil {
-			errorChanel <- c.JSON(helper.Response{
-				Status:  false,
-				Data:    nil,
-				Message: "Fail to update",
-				Error:   helper.Error{},
-			})
+			errorChanel <- errors.New("Fail to update to tkb")
 			return
 		}
 
@@ -345,8 +329,20 @@ func UnregistSubject(c *fiber.Ctx) error {
 
 	for i := 0; i < len(errorChanel); i++ {
 		if err := <-errorChanel; err != nil {
-			tx.Rollback()
-			return err
+			if errR := tx.Rollback(); errR != nil {
+				return c.JSON(helper.Response{
+					Status:  true,
+					Data:    nil,
+					Message: "Rollback fail",
+					Error:   helper.Error{},
+				})
+			}
+			return c.JSON(helper.Response{
+				Status:  true,
+				Data:    nil,
+				Message: err.Error(),
+				Error:   helper.Error{},
+			})
 		}
 	}
 
