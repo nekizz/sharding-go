@@ -42,3 +42,22 @@ func changeDataType(tkb model.TKB) *TKB {
 		TuHoc:       tkb.TuHoc,
 	}
 }
+
+//check trong csdl
+//count, err := shard.Cluster.Shard(int64(id)).Model(&regist).Where("ma_sv = ? AND ma_mon_hoc = ?", body.MaSV, body.MaMon).Count()
+//if err != nil {
+//	return c.JSON(helper.Response{
+//		Status:  true,
+//		Data:    nil,
+//		Message: "Fail to create",
+//		Error:   helper.Error{},
+//	})
+//}
+//if count > 0 {
+//	return c.JSON(helper.Response{
+//		Status:  false,
+//		Message: "Mon nay da dc dki",
+//		Data:    nil,
+//		Error:   helper.Error{},
+//	})
+//}

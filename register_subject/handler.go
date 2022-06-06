@@ -38,29 +38,13 @@ func RegistSubject(c *fiber.Ctx) error {
 	}
 
 	var wg sync.WaitGroup
-	//var regist []*shard.RegisterSubject
 
+	errorChanel := make(chan error, 3)
 	id := uint(helper.HashToInt(body.MaMon + body.NhomLop + strconv.Itoa(body.IDMon)))
-	//check trong csdl
-	//count, err := shard.Cluster.Shard(int64(id)).Model(&regist).Where("ma_sv = ? AND ma_mon_hoc = ?", body.MaSV, body.MaMon).Count()
-	//if err != nil {
-	//	return c.JSON(helper.Response{
-	//		Status:  true,
-	//		Data:    nil,
-	//		Message: "Fail to create",
-	//		Error:   helper.Error{},
-	//	})
-	//}
-	//if count > 0 {
-	//	return c.JSON(helper.Response{
-	//		Status:  false,
-	//		Message: "Mon nay da dc dki",
-	//		Data:    nil,
-	//		Error:   helper.Error{},
-	//	})
-	//}
 
-	//check trong elasticsearch
+	db := shard.Cluster.Shard(int64(id))
+	tx, err := db.Begin()
+
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
 			"bool": map[string]interface{}{
@@ -79,7 +63,6 @@ func RegistSubject(c *fiber.Ctx) error {
 			},
 		},
 	}
-
 	_, totalRecord, errorES := helper.QueryES("regist_subject", query)
 	if errorES != nil {
 		return c.JSON(helper.Response{
@@ -121,7 +104,6 @@ func RegistSubject(c *fiber.Ctx) error {
 			Error:   helper.Error{},
 		})
 	}
-
 	if tkb.SoChoConLai > uint(helper.StringToInt(tkb.SySo)) {
 		return c.JSON(helper.Response{
 			Status:  false,
@@ -133,53 +115,71 @@ func RegistSubject(c *fiber.Ctx) error {
 
 	wg.Add(3)
 
-	//create record in db
-	go func(wg *sync.WaitGroup) error {
+	go func(wg *sync.WaitGroup) {
 		defer wg.Done()
-
-		err = shard.NewRS().CreateRS(shard.Cluster, rs)
-		if err != nil {
-			return c.JSON(helper.Response{
+		//err = shard.NewRS().CreateRS(shard.Cluster, rs)
+		errI := tx.Insert(rs)
+		if errI != nil {
+			errorChanel <- c.JSON(helper.Response{
 				Status:  false,
 				Data:    nil,
 				Message: "Fail to create",
 				Error:   helper.Error{},
 			})
+			return
 		}
-		return nil
+
+		errorChanel <- nil
 	}(&wg)
 
-	//create record in es
-	go func(wg *sync.WaitGroup) error {
+	go func(wg *sync.WaitGroup) {
 		defer wg.Done()
 		_, err = helper.InsertToElastic(rs, "regist_subject", strconv.Itoa(int(rs.ID)), "_doc")
 		if err != nil {
-			return c.JSON(helper.Response{
+			errorChanel <- c.JSON(helper.Response{
 				Status:  false,
 				Data:    nil,
 				Message: "Fail to create in elasticsearch",
 				Error:   helper.Error{},
 			})
+			return
 		}
-		return nil
+		errorChanel <- nil
 	}(&wg)
 
-	go func(wg *sync.WaitGroup) error {
+	go func(wg *sync.WaitGroup) {
 		defer wg.Done()
 		tkb.SoChoConLai -= 1
-		err1 := shard.NewTKB().UpdateTKB(shard.Cluster, tkb)
-		if err1 != nil {
-			return c.JSON(helper.Response{
+		errU := tx.Update(tkb)
+		if errU != nil {
+			errorChanel <- c.JSON(helper.Response{
 				Status:  false,
 				Data:    nil,
 				Message: "Fail to update",
 				Error:   helper.Error{},
 			})
+			return
 		}
-		return nil
+		errorChanel <- nil
 	}(&wg)
 
 	wg.Wait()
+
+	for i := 0; i < len(errorChanel); i++ {
+		if err := <-errorChanel; err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return c.JSON(helper.Response{
+			Status:  true,
+			Data:    nil,
+			Message: "Commit transaction fail",
+			Error:   helper.Error{},
+		})
+	}
 
 	return c.JSON(helper.Response{
 		Status:  true,
@@ -217,6 +217,12 @@ func UnregistSubject(c *fiber.Ctx) error {
 	}
 
 	var wg sync.WaitGroup
+	errorChanel := make(chan error, 3)
+	id := uint(helper.HashToInt(body.MaMon + body.NhomLop + strconv.Itoa(body.IDMon)))
+
+	db := shard.Cluster.Shard(int64(id))
+	tx, err := db.Begin()
+
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
 			"bool": map[string]interface{}{
@@ -235,14 +241,31 @@ func UnregistSubject(c *fiber.Ctx) error {
 			},
 		},
 	}
+	_, totalRecord, errorES := helper.QueryES("regist_subject", query)
+	if errorES != nil {
+		return c.JSON(helper.Response{
+			Status:  false,
+			Data:    nil,
+			Message: "Fail to get in elasticsearch",
+			Error:   helper.Error{},
+		})
+	}
+	if totalRecord == 0 {
+		return c.JSON(helper.Response{
+			Status:  false,
+			Message: "Can't delete because this object doesn't exist",
+			Data:    nil,
+			Error:   helper.Error{},
+		})
+	}
 
 	rs := &shard.RegisterSubject{
-		ID:       uint(helper.HashToInt(body.MaMon + body.NhomLop + "1464")),
+		ID:       id,
 		MaSV:     body.MaSV,
 		NhomLop:  body.NhomLop,
 		MaMonHoc: body.MaMon,
 	}
-	tkb, err := shard.NewTKB().GetTKB(shard.Cluster, int64(helper.HashToInt(body.MaMon+body.NhomLop+"1464")))
+	tkb, err := shard.NewTKB().GetTKB(shard.Cluster, int64(id))
 	if err != nil {
 		return c.JSON(helper.Response{
 			Status:  false,
@@ -251,7 +274,6 @@ func UnregistSubject(c *fiber.Ctx) error {
 			Error:   helper.Error{},
 		})
 	}
-
 	if tkb.SoChoConLai < 1 {
 		return c.JSON(helper.Response{
 			Status:  false,
@@ -260,7 +282,6 @@ func UnregistSubject(c *fiber.Ctx) error {
 			Error:   helper.Error{},
 		})
 	}
-
 	if tkb.SoChoConLai >= uint(helper.StringToInt(tkb.SySo)) {
 		return c.JSON(helper.Response{
 			Status:  false,
@@ -272,53 +293,71 @@ func UnregistSubject(c *fiber.Ctx) error {
 
 	wg.Add(3)
 
-	//delete in db
-	go func(wg *sync.WaitGroup) error {
+	go func(wg *sync.WaitGroup) {
 		defer wg.Done()
-		err := shard.NewRS().DeleteRS(shard.Cluster, rs)
+		//err := shard.NewRS().DeleteRS(shard.Cluster, rs)
+		err := tx.Delete(rs)
 		if err != nil {
-			return c.JSON(helper.Response{
+			errorChanel <- c.JSON(helper.Response{
 				Status:  false,
 				Data:    nil,
 				Message: "Fail to delete",
 				Error:   helper.Error{},
 			})
+			return
 		}
-		return nil
+		errorChanel <- nil
 	}(&wg)
 
-	//delete in es
-	go func(wg *sync.WaitGroup) error {
+	go func(wg *sync.WaitGroup) {
 		defer wg.Done()
 		_, err = helper.DeleteByQueryES("regist_subject", query)
 		if err != nil {
-			return c.JSON(helper.Response{
+			errorChanel <- c.JSON(helper.Response{
 				Status:  false,
 				Data:    nil,
 				Message: "Fail to delete in elasticsearch",
 				Error:   helper.Error{},
 			})
+			return
 		}
-		return nil
+		errorChanel <- nil
 	}(&wg)
 
-	go func(wg *sync.WaitGroup) error {
+	go func(wg *sync.WaitGroup) {
 		defer wg.Done()
 		tkb.SoChoConLai += 1
-		err1 := shard.NewTKB().UpdateTKB(shard.Cluster, tkb)
+		err1 := tx.Update(tkb)
 		if err1 != nil {
-			return c.JSON(helper.Response{
+			errorChanel <- c.JSON(helper.Response{
 				Status:  false,
 				Data:    nil,
 				Message: "Fail to update",
 				Error:   helper.Error{},
 			})
+			return
 		}
 
-		return nil
+		errorChanel <- nil
 	}(&wg)
 
 	wg.Wait()
+
+	for i := 0; i < len(errorChanel); i++ {
+		if err := <-errorChanel; err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return c.JSON(helper.Response{
+			Status:  true,
+			Data:    nil,
+			Message: "Commit transaction fail",
+			Error:   helper.Error{},
+		})
+	}
 
 	return c.JSON(helper.Response{
 		Status:  true,
@@ -347,7 +386,7 @@ func UploadDataToES(c *fiber.Ctx) error {
 	})
 }
 
-func checkIntoDB(check int, numShard int) *gorm.DB {
+func checkIntoDB(check uint, numShard uint) *gorm.DB {
 	result := check % numShard
 	switch result {
 	case 0:
