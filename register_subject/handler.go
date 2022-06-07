@@ -76,7 +76,7 @@ func RegistSubject(c *fiber.Ctx) error {
 	if totalRecord > 0 {
 		return c.JSON(helper.Response{
 			Status:  false,
-			Message: "Mon nay da dc dki",
+			Message: "This subject have already registed",
 			Data:    nil,
 			Error:   helper.Error{},
 		})
@@ -93,7 +93,7 @@ func RegistSubject(c *fiber.Ctx) error {
 		return c.JSON(helper.Response{
 			Status:  false,
 			Data:    nil,
-			Message: "this subject doesn't exist",
+			Message: "This subject doesn't exist",
 			Error:   helper.Error{},
 		})
 	}
@@ -101,7 +101,7 @@ func RegistSubject(c *fiber.Ctx) error {
 		return c.JSON(helper.Response{
 			Status:  false,
 			Data:    nil,
-			Message: "so cho dang ki mon hoc da het",
+			Message: "This subject is out of slot",
 			Error:   helper.Error{},
 		})
 	}
@@ -109,7 +109,7 @@ func RegistSubject(c *fiber.Ctx) error {
 		return c.JSON(helper.Response{
 			Status:  false,
 			Data:    nil,
-			Message: "huy cho khong thoa man",
+			Message: "Invalid regist action with this subject",
 			Error:   helper.Error{},
 		})
 	}
@@ -155,14 +155,23 @@ func RegistSubject(c *fiber.Ctx) error {
 		if err := <-errorChanel; err != nil {
 			if errR := tx.Rollback(); errR != nil {
 				return c.JSON(helper.Response{
-					Status:  true,
+					Status:  false,
 					Data:    nil,
 					Message: "Rollback fail",
 					Error:   helper.Error{},
 				})
 			}
+			_, errES := helper.DeleteByQueryES("regist_subject", query)
+			if errES != nil {
+				return c.JSON(helper.Response{
+					Status:  false,
+					Data:    nil,
+					Message: "Rollback ES fail",
+					Error:   helper.Error{},
+				})
+			}
 			return c.JSON(helper.Response{
-				Status:  true,
+				Status:  false,
 				Data:    nil,
 				Message: err.Error(),
 				Error:   helper.Error{},
@@ -268,7 +277,7 @@ func UnregistSubject(c *fiber.Ctx) error {
 		return c.JSON(helper.Response{
 			Status:  false,
 			Data:    nil,
-			Message: "get TKB fail",
+			Message: "Fail to get TKB",
 			Error:   helper.Error{},
 		})
 	}
@@ -276,7 +285,7 @@ func UnregistSubject(c *fiber.Ctx) error {
 		return c.JSON(helper.Response{
 			Status:  false,
 			Data:    nil,
-			Message: "so cho dang ki mon hoc da het",
+			Message: "This subject is out of slot",
 			Error:   helper.Error{},
 		})
 	}
@@ -284,7 +293,7 @@ func UnregistSubject(c *fiber.Ctx) error {
 		return c.JSON(helper.Response{
 			Status:  false,
 			Data:    nil,
-			Message: "huy cho khong thoa man",
+			Message: "Invalid unregist action of this subject",
 			Error:   helper.Error{},
 		})
 	}
@@ -305,7 +314,6 @@ func UnregistSubject(c *fiber.Ctx) error {
 	go func(wg *sync.WaitGroup) {
 		defer wg.Done()
 		_, err = helper.DeleteByQueryES("regist_subject", query)
-		err = errors.New("okela")
 		if err != nil {
 			errorChanel <- errors.New("Fail to delete from elasticsearch")
 			return
@@ -331,14 +339,24 @@ func UnregistSubject(c *fiber.Ctx) error {
 		if err := <-errorChanel; err != nil {
 			if errR := tx.Rollback(); errR != nil {
 				return c.JSON(helper.Response{
-					Status:  true,
+					Status:  false,
 					Data:    nil,
 					Message: "Rollback fail",
 					Error:   helper.Error{},
 				})
 			}
+			_, _, errES := helper.QueryES("regist_subject", query)
+			if errES != nil {
+				return c.JSON(helper.Response{
+					Status:  false,
+					Data:    nil,
+					Message: "Rollback ES fail",
+					Error:   helper.Error{},
+				})
+			}
+
 			return c.JSON(helper.Response{
-				Status:  true,
+				Status:  false,
 				Data:    nil,
 				Message: err.Error(),
 				Error:   helper.Error{},

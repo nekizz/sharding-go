@@ -99,7 +99,6 @@ func transferDataToShard(cluster *sharding.Cluster) error {
 		fmt.Println(err)
 	}
 	fmt.Println(count)
-
 	for i, idx := range listTKB {
 		fmt.Println(i)
 		wg.Add(1)
