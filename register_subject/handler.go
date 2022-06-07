@@ -39,6 +39,7 @@ func RegistSubject(c *fiber.Ctx) error {
 	}
 
 	var wg sync.WaitGroup
+	var tkbLock shard.TKB
 
 	errorChanel := make(chan error, 3)
 	id := uint(helper.HashToInt(body.MaMon + body.NhomLop + strconv.Itoa(body.IDMon)))
@@ -110,6 +111,16 @@ func RegistSubject(c *fiber.Ctx) error {
 			Status:  false,
 			Data:    nil,
 			Message: "Invalid regist action with this subject",
+			Error:   helper.Error{},
+		})
+	}
+
+	_, errA := tx.QueryOne(&tkbLock, `SELECT so_cho_con_lai FROM ?shard.tkbs WHERE id = ? FOR UPDATE`, id)
+	if errA != nil {
+		return c.JSON(helper.Response{
+			Status:  false,
+			Data:    nil,
+			Message: errA.Error(),
 			Error:   helper.Error{},
 		})
 	}
@@ -224,6 +235,8 @@ func UnregistSubject(c *fiber.Ctx) error {
 	}
 
 	var wg sync.WaitGroup
+	var tkbLock shard.TKB
+
 	errorChanel := make(chan error, 3)
 	id := uint(helper.HashToInt(body.MaMon + body.NhomLop + strconv.Itoa(body.IDMon)))
 
@@ -294,6 +307,16 @@ func UnregistSubject(c *fiber.Ctx) error {
 			Status:  false,
 			Data:    nil,
 			Message: "Invalid unregist action of this subject",
+			Error:   helper.Error{},
+		})
+	}
+
+	_, errA := tx.QueryOne(&tkbLock, `SELECT so_cho_con_lai FROM ?shard.tkbs WHERE id = ? FOR UPDATE`, id)
+	if errA != nil {
+		return c.JSON(helper.Response{
+			Status:  false,
+			Data:    nil,
+			Message: "Fail to lock record slot",
 			Error:   helper.Error{},
 		})
 	}
