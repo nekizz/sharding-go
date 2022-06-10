@@ -60,7 +60,6 @@ func init() {
 	cluster := sharding.NewCluster(dbs, nshards)
 	Cluster = cluster
 	Nshards = nshards
-	fmt.Println(cluster)
 
 	fmt.Println("Create cluster successful")
 }
@@ -99,6 +98,7 @@ func transferDataToShard(cluster *sharding.Cluster) error {
 		fmt.Println(err)
 	}
 	fmt.Println(count)
+
 	for i, idx := range listTKB {
 		fmt.Println(i)
 		wg.Add(1)

@@ -115,7 +115,7 @@ func RegistSubject(c *fiber.Ctx) error {
 		})
 	}
 
-	_, errA := tx.QueryOne(&tkbLock, `SELECT so_cho_con_lai FROM ?shard.tkbs WHERE id = ? FOR UPDATE`, id)
+	errA := db.Model(&tkbLock).Where("id = ?", id).For("UPDATE").Column("so_cho_con_lai").Select()
 	if errA != nil {
 		return c.JSON(helper.Response{
 			Status:  false,
@@ -311,7 +311,7 @@ func UnregistSubject(c *fiber.Ctx) error {
 		})
 	}
 
-	_, errA := tx.QueryOne(&tkbLock, `SELECT so_cho_con_lai FROM ?shard.tkbs WHERE id = ? FOR UPDATE`, id)
+	errA := db.Model(&tkbLock).Where("id = ?", id).For("UPDATE").Column("so_cho_con_lai").Select()
 	if errA != nil {
 		return c.JSON(helper.Response{
 			Status:  false,
@@ -360,14 +360,7 @@ func UnregistSubject(c *fiber.Ctx) error {
 
 	for i := 0; i < len(errorChanel); i++ {
 		if err := <-errorChanel; err != nil {
-			if errR := tx.Rollback(); errR != nil {
-				return c.JSON(helper.Response{
-					Status:  false,
-					Data:    nil,
-					Message: "Rollback fail",
-					Error:   helper.Error{},
-				})
-			}
+			_ = tx.Rollback()
 			_, _, errES := helper.QueryES("regist_subject", query)
 			if errES != nil {
 				return c.JSON(helper.Response{
