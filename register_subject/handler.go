@@ -33,7 +33,7 @@ func RegistSubject(c *fiber.Ctx) error {
 			Message: "Missing params.",
 			Error: helper.Error{
 				ErrorCode:    constant.ErrorCode["ERROR_MISSING_PARAMS"],
-				ErrorMessage: "Missing params2.",
+				ErrorMessage: "Missing params.",
 			},
 		})
 	}
