@@ -1,13 +1,17 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/gofiber/fiber/v2"
 	"log"
 	"shrading/routes"
 )
 
 func main() {
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		JSONEncoder: json.Marshal,
+		JSONDecoder: json.Unmarshal,
+	})
 
 	routes.RegisterAPI(app)
 
@@ -22,38 +26,3 @@ func main() {
 		log.Println("SERVICE RUNNING ON PORT 3000")
 	}
 }
-
-//var (
-//	mutex   sync.Mutex
-//	balance int
-//)
-
-//func deposit(value int, wg *sync.WaitGroup) {
-//	mutex.Lock()
-//	fmt.Printf("Depositing %d to account with balance %d", value, balance)
-//	balance += value
-//	mutex.Unlock()
-//	wg.Done()
-//}
-//
-//func withdraw(value int, wg *sync.WaitGroup) {
-//	mutex.Lock()
-//	fmt.Printf("Withdraw %d to account with balance %d", value)
-//	balance -= value
-//	mutex.Unlock()
-//	wg.Done()
-//}
-//
-//func main() {
-//	balance = 1000
-//
-//	var wg sync.WaitGroup
-//
-//	wg.Add(2)
-//	go withdraw(700, &wg)
-//
-//	go deposit(500, &wg)
-//	wg.Wait()
-//
-//	fmt.Printf("New Balance %d\n", balance)
-//}

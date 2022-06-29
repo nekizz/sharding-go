@@ -39,12 +39,14 @@ func init() {
 		User:     "root",
 		Password: "r1UeSNbJ",
 		Database: "sharding1",
+		PoolSize: 100,
 	})
 	db2 := pg.Connect(&pg.Options{
 		Addr:     "13.215.49.1:5433",
 		User:     "root",
 		Password: "ZrEFc5tR",
 		Database: "sharding2",
+		PoolSize: 100,
 	})
 
 	db3 := pg.Connect(&pg.Options{
@@ -52,6 +54,7 @@ func init() {
 		User:     "root",
 		Password: "q2XLM027",
 		Database: "sharding3",
+		PoolSize: 100,
 	})
 
 	dbs := []*pg.DB{db, db2, db3} // list of physical PostgreSQL servers

@@ -2,6 +2,7 @@ package register_subject
 
 import (
 	"errors"
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 	"shrading/connection"
@@ -22,7 +23,7 @@ func RegistSubject(c *fiber.Ctx) error {
 			Message: "Missing params.",
 			Error: helper.Error{
 				ErrorCode:    constant.ErrorCode["ERROR_MISSING_PARAMS"],
-				ErrorMessage: "Missing params1.",
+				ErrorMessage: "Missing params",
 			},
 		})
 	}
@@ -33,7 +34,7 @@ func RegistSubject(c *fiber.Ctx) error {
 			Message: "Missing params.",
 			Error: helper.Error{
 				ErrorCode:    constant.ErrorCode["ERROR_MISSING_PARAMS"],
-				ErrorMessage: "Missing params.",
+				ErrorMessage: "Missing params",
 			},
 		})
 	}
@@ -46,6 +47,9 @@ func RegistSubject(c *fiber.Ctx) error {
 
 	db := shard.Cluster.Shard(int64(id))
 	tx, err := db.Begin()
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
@@ -71,7 +75,9 @@ func RegistSubject(c *fiber.Ctx) error {
 			Status:  false,
 			Data:    nil,
 			Message: "Fail to get in elasticsearch",
-			Error:   helper.Error{},
+			Error: helper.Error{
+				ErrorCode: constant.ErrorCode["ERROR_GET_ELASTICSEARCH"],
+			},
 		})
 	}
 	if totalRecord > 0 {
@@ -79,7 +85,9 @@ func RegistSubject(c *fiber.Ctx) error {
 			Status:  false,
 			Message: "This subject have already registed",
 			Data:    nil,
-			Error:   helper.Error{},
+			Error: helper.Error{
+				ErrorCode: constant.ErrorCode["ERROR_DUPLICATE_SUBJECT"],
+			},
 		})
 	}
 
@@ -94,8 +102,10 @@ func RegistSubject(c *fiber.Ctx) error {
 		return c.JSON(helper.Response{
 			Status:  false,
 			Data:    nil,
-			Message: "This subject doesn't exist",
-			Error:   helper.Error{},
+			Message: "This subject don't exist",
+			Error: helper.Error{
+				ErrorCode: constant.ErrorCode["ERROR_SUBJECT_DO_NOT_EXIST"],
+			},
 		})
 	}
 	if tkb.SoChoConLai < 1 {
@@ -103,7 +113,9 @@ func RegistSubject(c *fiber.Ctx) error {
 			Status:  false,
 			Data:    nil,
 			Message: "This subject is out of slot",
-			Error:   helper.Error{},
+			Error: helper.Error{
+				ErrorCode: constant.ErrorCode["ERROR_FULL_SLOT"],
+			},
 		})
 	}
 	if tkb.SoChoConLai > uint(helper.StringToInt(tkb.SySo)) {
@@ -111,55 +123,77 @@ func RegistSubject(c *fiber.Ctx) error {
 			Status:  false,
 			Data:    nil,
 			Message: "Invalid regist action with this subject",
-			Error:   helper.Error{},
+			Error: helper.Error{
+				ErrorCode: constant.ErrorCode["ERROR_INVALID_SLOT"],
+			},
 		})
 	}
 
-	errA := db.Model(&tkbLock).Where("id = ?", id).For("UPDATE").Column("so_cho_con_lai").Select()
+	errA := tx.Model(&tkbLock).Where("id = ?", id).For("UPDATE").Column("so_cho_con_lai").Select()
 	if errA != nil {
 		return c.JSON(helper.Response{
 			Status:  false,
 			Data:    nil,
 			Message: errA.Error(),
-			Error:   helper.Error{},
+			Error: helper.Error{
+				ErrorCode: constant.ErrorCode["ERROR_LOCK_RECORD"],
+			},
 		})
 	}
 
-	wg.Add(3)
+	//tx2, err := db.Begin()
+	//var testObject shard.TKB
+	//errTest := tx2.Model(&testObject).Where("id = ?", id).Table("tkbs").Column("so_cho_con_lai").Select()
+	//if errTest != nil {
+	//	return c.JSON(helper.Response{
+	//		Status:  false,
+	//		Data:    nil,
+	//		Message: errTest.Error(),
+	//		Error: helper.Error{
+	//			ErrorCode: constant.ErrorCode["ERROR_FOR_UPDATE"],
+	//		},
+	//	})
+	//}
+	//errC := tx2.Commit()
+	//if errC != nil {
+	//	fmt.Println("loi for update")
+	//}
+	//fmt.Println(testObject)
 
-	go func(wg *sync.WaitGroup) {
+	wg.Add(3)
+	go func() {
 		defer wg.Done()
-		//err = shard.NewRS().CreateRS(shard.Cluster, rs)
+
 		errI := tx.Insert(rs)
 		if errI != nil {
-			errorChanel <- errors.New("Fail to insert to database")
+			errorChanel <- errors.New("ERROR_INSERT_DATABASE")
 			return
 		}
-
 		errorChanel <- nil
-	}(&wg)
+	}()
 
-	go func(wg *sync.WaitGroup) {
+	go func() {
 		defer wg.Done()
+
 		_, err = helper.InsertToElastic(rs, "regist_subject", strconv.Itoa(int(rs.ID)), "_doc")
 		if err != nil {
-			errorChanel <- errors.New("Fail to insert to elasticsearch")
+			errorChanel <- errors.New("ERROR_INSERT_ELASTICSEARCH")
 			return
 		}
 		errorChanel <- nil
-	}(&wg)
+	}()
 
-	go func(wg *sync.WaitGroup) {
+	go func() {
 		defer wg.Done()
+
 		tkb.SoChoConLai -= 1
 		errU := tx.Update(tkb)
 		if errU != nil {
-			errorChanel <- errors.New("Fail to update to tkb")
+			errorChanel <- errors.New("ERROR_UPDATE_TKB")
 			return
 		}
 		errorChanel <- nil
-	}(&wg)
-
+	}()
 	wg.Wait()
 
 	for i := 0; i < len(errorChanel); i++ {
@@ -169,7 +203,9 @@ func RegistSubject(c *fiber.Ctx) error {
 					Status:  false,
 					Data:    nil,
 					Message: "Rollback fail",
-					Error:   helper.Error{},
+					Error: helper.Error{
+						ErrorCode: constant.ErrorCode["ERROR_ROLLBACK_DB_FAIL"],
+					},
 				})
 			}
 			_, errES := helper.DeleteByQueryES("regist_subject", query)
@@ -178,14 +214,19 @@ func RegistSubject(c *fiber.Ctx) error {
 					Status:  false,
 					Data:    nil,
 					Message: "Rollback ES fail",
-					Error:   helper.Error{},
+					Error: helper.Error{
+						ErrorCode:    constant.ErrorCode["ERROR_ROLLBACK_ES_FAIL"],
+						ErrorMessage: errorES.Error(),
+					},
 				})
 			}
 			return c.JSON(helper.Response{
 				Status:  false,
 				Data:    nil,
 				Message: err.Error(),
-				Error:   helper.Error{},
+				Error: helper.Error{
+					ErrorCode: constant.ErrorCode[err.Error()],
+				},
 			})
 		}
 	}
@@ -195,15 +236,15 @@ func RegistSubject(c *fiber.Ctx) error {
 			Status:  true,
 			Data:    nil,
 			Message: "Commit transaction fail",
-			Error:   helper.Error{},
+			Error: helper.Error{
+				ErrorCode: constant.ErrorCode["ERROR_COMMIT_FAIL"],
+			},
 		})
 	}
 
 	return c.JSON(helper.Response{
 		Status:  true,
-		Data:    nil,
 		Message: "Regist subject success",
-		Error:   helper.Error{},
 	})
 
 }
@@ -218,7 +259,7 @@ func UnregistSubject(c *fiber.Ctx) error {
 			Message: "Missing params.",
 			Error: helper.Error{
 				ErrorCode:    constant.ErrorCode["ERROR_MISSING_PARAMS"],
-				ErrorMessage: "Missing params.",
+				ErrorMessage: "Missing params",
 			},
 		})
 	}
@@ -229,7 +270,7 @@ func UnregistSubject(c *fiber.Ctx) error {
 			Message: "Missing params.",
 			Error: helper.Error{
 				ErrorCode:    constant.ErrorCode["ERROR_MISSING_PARAMS"],
-				ErrorMessage: "Missing params.",
+				ErrorMessage: "Missing params",
 			},
 		})
 	}
@@ -265,17 +306,19 @@ func UnregistSubject(c *fiber.Ctx) error {
 	if errorES != nil {
 		return c.JSON(helper.Response{
 			Status:  false,
-			Data:    nil,
 			Message: "Fail to get in elasticsearch",
-			Error:   helper.Error{},
+			Error: helper.Error{
+				ErrorCode: constant.ErrorCode["ERROR_GET_ELASTICSEARCH"],
+			},
 		})
 	}
 	if totalRecord == 0 {
 		return c.JSON(helper.Response{
 			Status:  false,
 			Message: "Can't delete because this object doesn't exist",
-			Data:    nil,
-			Error:   helper.Error{},
+			Error: helper.Error{
+				ErrorCode: constant.ErrorCode["ERROR_UNREGIST_SUBJECT_DO_NOT_EXIST"],
+			},
 		})
 	}
 
@@ -289,35 +332,40 @@ func UnregistSubject(c *fiber.Ctx) error {
 	if err != nil {
 		return c.JSON(helper.Response{
 			Status:  false,
-			Data:    nil,
-			Message: "Fail to get TKB",
-			Error:   helper.Error{},
+			Message: "This subject don't exist",
+			Error: helper.Error{
+				ErrorCode: constant.ErrorCode["ERROR_SUBJECT_DO_NOT_EXIST"],
+			},
 		})
 	}
 	if tkb.SoChoConLai < 1 {
 		return c.JSON(helper.Response{
 			Status:  false,
-			Data:    nil,
 			Message: "This subject is out of slot",
-			Error:   helper.Error{},
+			Error: helper.Error{
+				ErrorCode: constant.ErrorCode["ERROR_FULL_SLOT"],
+			},
 		})
 	}
 	if tkb.SoChoConLai >= uint(helper.StringToInt(tkb.SySo)) {
 		return c.JSON(helper.Response{
 			Status:  false,
-			Data:    nil,
 			Message: "Invalid unregist action of this subject",
-			Error:   helper.Error{},
+			Error: helper.Error{
+				ErrorCode: constant.ErrorCode["ERROR_INVALID_SLOT"],
+			},
 		})
 	}
 
-	errA := db.Model(&tkbLock).Where("id = ?", id).For("UPDATE").Column("so_cho_con_lai").Select()
+	errA := tx.Model(&tkbLock).Where("id = ?", id).For("UPDATE").Column("so_cho_con_lai").Select()
 	if errA != nil {
 		return c.JSON(helper.Response{
 			Status:  false,
 			Data:    nil,
 			Message: "Fail to lock record slot",
-			Error:   helper.Error{},
+			Error: helper.Error{
+				ErrorCode: constant.ErrorCode["ERROR_LOCK_RECORD"],
+			},
 		})
 	}
 
@@ -328,7 +376,7 @@ func UnregistSubject(c *fiber.Ctx) error {
 		//err := shard.NewRS().DeleteRS(shard.Cluster, rs)
 		err := tx.Delete(rs)
 		if err != nil {
-			errorChanel <- errors.New("Fail to delete from database")
+			errorChanel <- errors.New("ERROR_DELETE_DATABASE")
 			return
 		}
 		errorChanel <- nil
@@ -338,7 +386,7 @@ func UnregistSubject(c *fiber.Ctx) error {
 		defer wg.Done()
 		_, err = helper.DeleteByQueryES("regist_subject", query)
 		if err != nil {
-			errorChanel <- errors.New("Fail to delete from elasticsearch")
+			errorChanel <- errors.New("ERROR_DELETE_ELASTICSEARCH")
 			return
 		}
 		errorChanel <- nil
@@ -349,7 +397,7 @@ func UnregistSubject(c *fiber.Ctx) error {
 		tkb.SoChoConLai += 1
 		err1 := tx.Update(tkb)
 		if err1 != nil {
-			errorChanel <- errors.New("Fail to update to tkb")
+			errorChanel <- errors.New("ERROR_UPDATE_TKB")
 			return
 		}
 
@@ -360,22 +408,32 @@ func UnregistSubject(c *fiber.Ctx) error {
 
 	for i := 0; i < len(errorChanel); i++ {
 		if err := <-errorChanel; err != nil {
-			_ = tx.Rollback()
+			if errR := tx.Rollback(); errR != nil {
+				return c.JSON(helper.Response{
+					Status:  false,
+					Message: "Rollback fail",
+					Error: helper.Error{
+						ErrorCode: constant.ErrorCode["ERROR_ROLLBACK_DB_FAIL"],
+					},
+				})
+			}
 			_, _, errES := helper.QueryES("regist_subject", query)
 			if errES != nil {
 				return c.JSON(helper.Response{
 					Status:  false,
-					Data:    nil,
 					Message: "Rollback ES fail",
-					Error:   helper.Error{},
+					Error: helper.Error{
+						ErrorCode: constant.ErrorCode["ERROR_ROLLBACK_ES_FAIL"],
+					},
 				})
 			}
 
 			return c.JSON(helper.Response{
 				Status:  false,
-				Data:    nil,
 				Message: err.Error(),
-				Error:   helper.Error{},
+				Error: helper.Error{
+					ErrorCode: constant.ErrorCode[err.Error()],
+				},
 			})
 		}
 	}
@@ -385,15 +443,16 @@ func UnregistSubject(c *fiber.Ctx) error {
 			Status:  true,
 			Data:    nil,
 			Message: "Commit transaction fail",
-			Error:   helper.Error{},
+			Error: helper.Error{
+				ErrorCode:    constant.ErrorCode["ERROR_COMMIT_FAIL"],
+				ErrorMessage: errorES.Error(),
+			},
 		})
 	}
 
 	return c.JSON(helper.Response{
 		Status:  true,
-		Data:    nil,
 		Message: "Unregist subject success",
-		Error:   helper.Error{},
 	})
 }
 
