@@ -41,7 +41,7 @@ func QueryES(index string, query map[string]interface{}) (ESResultRegistSubject,
 	}
 
 	totalRecord = rs.Hits.Total.Value
-	fmt.Println(totalRecord)
+
 	return rs, totalRecord, nil
 }
 

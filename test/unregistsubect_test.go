@@ -43,18 +43,32 @@ func TestUnregistSubjectActivity(t *testing.T) {
 		headers map[string]string
 	}{
 		{
-			name:           `POST endpoint to regist subject`, // test thieu truong
+			name:           `POST endpoint to unregist subject`, // test thieu truong
 			method:         http.MethodPost,
-			path:           `/regist_subject`,
+			path:           `/unregist_subject`,
 			statusCode:     4000,
 			body:           `Invalid payload`,
 			requestHeaders: map[string]string{`Content-Type`: `application/text`},
 			headers:        map[string]string{`Content-Type`: `text/plain; charset=utf-8`},
 		},
 		{
-			name:       `POST endpoint to regist subject`, //test truong hop fail trong elk
+			name:       `POST endpoint to unregist subject`, // test thieu truong
 			method:     http.MethodPost,
-			path:       `/regist_subject`,
+			path:       `/unregist_subject`,
+			statusCode: 4000,
+			body:       `Invalid payload`,
+			requestBody: map[string]interface{}{
+				"ma_sv":    "B18DCCN213",
+				"nhom_lop": "1",
+			},
+			handlerMethodName: UnregistSubjectMethodName,
+			requestHeaders:    map[string]string{`Content-Type`: `application/text`},
+			headers:           map[string]string{`Content-Type`: `text/plain; charset=utf-8`},
+		},
+		{
+			name:       `POST endpoint to unregist subject`, //test truong hop fail trong elk
+			method:     http.MethodPost,
+			path:       `/unregist_subject`,
 			statusCode: 4001,
 			requestBody: map[string]interface{}{
 				"ma_sv":    "B18DCCN213",
@@ -66,9 +80,9 @@ func TestUnregistSubjectActivity(t *testing.T) {
 			headers:           map[string]string{`Content-Type`: `application/json`},
 		},
 		{
-			name:       `POST endpoint to regist subject`, //test voi hoc sinh xyz da dang ki mon nay r => bao loi
+			name:       `POST endpoint to unregist subject`, //test voi hoc sinh xyz da dang ki mon nay r => bao loi
 			method:     http.MethodPost,
-			path:       `/regist_subject`,
+			path:       `/unregist_subject`,
 			statusCode: 4002,
 			requestBody: map[string]interface{}{
 				"ma_sv":    "B18DCCN341",
@@ -80,9 +94,9 @@ func TestUnregistSubjectActivity(t *testing.T) {
 			headers:           map[string]string{`Content-Type`: `application/json`},
 		},
 		{
-			name:       `POST endpoint to regist subject`, //test mon hoc khong ton tai
+			name:       `POST endpoint to unregist subject`, //test mon hoc khong ton tai
 			method:     http.MethodPost,
-			path:       `/regist_subject`,
+			path:       `/unregist_subject`,
 			statusCode: 4003,
 			requestBody: map[string]interface{}{
 				"ma_sv":    "B18DCCN341",
@@ -94,9 +108,9 @@ func TestUnregistSubjectActivity(t *testing.T) {
 			headers:           map[string]string{`Content-Type`: `application/json`},
 		},
 		{
-			name:       `POST endpoint to regist subject`, //test full slot mon hoc
+			name:       `POST endpoint to unregist subject`, //test full slot mon hoc
 			method:     http.MethodPost,
-			path:       `/regist_subject`,
+			path:       `/unregist_subject`,
 			statusCode: 4004,
 			requestBody: map[string]interface{}{
 				"ma_sv":    "B18DCCN405",
@@ -108,9 +122,9 @@ func TestUnregistSubjectActivity(t *testing.T) {
 			headers:           map[string]string{`Content-Type`: `application/json`},
 		},
 		{
-			name:       `POST endpoint to regist subject`, //test invalid slot so cho > sy so
+			name:       `POST endpoint to unregist subject`, //test invalid slot so cho > sy so
 			method:     http.MethodPost,
-			path:       `/regist_subject`,
+			path:       `/unregist_subject`,
 			statusCode: 4005,
 			requestBody: map[string]interface{}{
 				"ma_sv":    "B18DCCN341",
@@ -122,9 +136,9 @@ func TestUnregistSubjectActivity(t *testing.T) {
 			headers:           map[string]string{`Content-Type`: `application/json`},
 		},
 		{
-			name:       `POST endpoint to regist subject`, //test lock record phai tat commnet trong ham handler
+			name:       `POST endpoint to unregist subject`, //test lock record phai tat commnet trong ham handler
 			method:     http.MethodPost,
-			path:       `/regist_subject`,
+			path:       `/unregist_subject`,
 			statusCode: 4006,
 			requestBody: map[string]interface{}{
 				"ma_sv":    "B18DCCN341",
@@ -136,9 +150,9 @@ func TestUnregistSubjectActivity(t *testing.T) {
 			headers:           map[string]string{`Content-Type`: `application/json`},
 		},
 		{
-			name:       `POST endpoint to regist subject`, //test delete database rs
+			name:       `POST endpoint to unregist subject`, //test delete database rs
 			method:     http.MethodPost,
-			path:       `/regist_subject`,
+			path:       `/unregist_subject`,
 			statusCode: 4013,
 			requestBody: map[string]interface{}{
 				"ma_sv":    "B18DCCN341",
@@ -150,9 +164,9 @@ func TestUnregistSubjectActivity(t *testing.T) {
 			headers:           map[string]string{`Content-Type`: `application/json`},
 		},
 		{
-			name:       `POST endpoint to regist subject`, //test insert elasticsearch rs
+			name:       `POST endpoint to unregist subject`, //test insert elasticsearch rs
 			method:     http.MethodPost,
-			path:       `/regist_subject`,
+			path:       `/unregist_subject`,
 			statusCode: 4014,
 			requestBody: map[string]interface{}{
 				"ma_sv":    "B18DCCN341",
@@ -164,9 +178,9 @@ func TestUnregistSubjectActivity(t *testing.T) {
 			headers:           map[string]string{`Content-Type`: `application/json`},
 		},
 		{
-			name:       `POST endpoint to regist subject`, //test update tkb database
+			name:       `POST endpoint to unregist subject`, //test update tkb database
 			method:     http.MethodPost,
-			path:       `/regist_subject`,
+			path:       `/unregist_subject`,
 			statusCode: 4009,
 			requestBody: map[string]interface{}{
 				"ma_sv":    "B18DCCN341",
@@ -178,9 +192,9 @@ func TestUnregistSubjectActivity(t *testing.T) {
 			headers:           map[string]string{`Content-Type`: `application/json`},
 		},
 		{
-			name:       `POST endpoint to regist subject`, //test rollback fail
+			name:       `POST endpoint to unregist subject`, //test rollback fail
 			method:     http.MethodPost,
-			path:       `/regist_subject`,
+			path:       `/unregist_subject`,
 			statusCode: 4010,
 			requestBody: map[string]interface{}{
 				"ma_sv":    "B18DCCN341",
@@ -192,9 +206,9 @@ func TestUnregistSubjectActivity(t *testing.T) {
 			headers:           map[string]string{`Content-Type`: `application/json`},
 		},
 		{
-			name:       `POST endpoint to regist subject`, //test rollback es fail
+			name:       `POST endpoint to unregist subject`, //test rollback es fail
 			method:     http.MethodPost,
-			path:       `/regist_subject`,
+			path:       `/unregist_subject`,
 			statusCode: 4011,
 			requestBody: map[string]interface{}{
 				"ma_sv":    "B18DCCN341",
@@ -206,9 +220,9 @@ func TestUnregistSubjectActivity(t *testing.T) {
 			headers:           map[string]string{`Content-Type`: `application/json`},
 		},
 		{
-			name:       `POST endpoint to regist subject`, //test commit fail
+			name:       `POST endpoint to unregist subject`, //test commit fail
 			method:     http.MethodPost,
-			path:       `/regist_subject`,
+			path:       `/unregist_subject`,
 			statusCode: 4012,
 			requestBody: map[string]interface{}{
 				"ma_sv":    "B18DCCN341",

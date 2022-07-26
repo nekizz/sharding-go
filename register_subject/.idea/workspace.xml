@@ -5,12 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="07876541-ca98-4098-9fbe-0be618d2b3b9" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/../constant/config.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../main_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../constant/constant.go" beforeDir="false" afterPath="$PROJECT_DIR$/../constant/constant.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../main.go" beforeDir="false" afterPath="$PROJECT_DIR$/../main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/handler.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/type.go" beforeDir="false" afterPath="$PROJECT_DIR$/type.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../helper/es_helper.go" beforeDir="false" afterPath="$PROJECT_DIR$/../helper/es_helper.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../routes/routes.go" beforeDir="false" afterPath="$PROJECT_DIR$/../routes/routes.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../test/registsubject_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/../test/registsubject_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../test/unregistsubect_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/../test/unregistsubect_test.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,7 +40,7 @@
     "WebServerToolWindowFactoryState": "false",
     "go.import.settings.migrated": "true",
     "go.sdk.automatically.set": "true",
-    "last_opened_file_path": "D:/zamba"
+    "last_opened_file_path": "C:/Users/Admin/GolandProjects/sharding-go/register_subject"
   }
 }]]></component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />

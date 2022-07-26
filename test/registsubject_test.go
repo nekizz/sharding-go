@@ -95,7 +95,7 @@ func TestRegistSubjectActivity(t *testing.T) {
 			headers:           map[string]string{`Content-Type`: `application/json`},
 		},
 		{
-			name:       `POST endpoint to regist subject`, //test full slot mon hoc
+			name:       `POST endpoint to regist subject`, //test full slot mon hoc + sua du lieu trong db la mon con 0 slot
 			method:     http.MethodPost,
 			path:       `/regist_subject`,
 			statusCode: 4004,
@@ -109,7 +109,7 @@ func TestRegistSubjectActivity(t *testing.T) {
 			headers:           map[string]string{`Content-Type`: `application/json`},
 		},
 		{
-			name:       `POST endpoint to regist subject`, //test invalid slot so cho > sy so
+			name:       `POST endpoint to regist subject`, //test invalid slot so cho > sy so + su đu lieu trong db 1 record co so cho con lai > sy so
 			method:     http.MethodPost,
 			path:       `/regist_subject`,
 			statusCode: 4005,
